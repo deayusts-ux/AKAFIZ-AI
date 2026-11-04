@@ -118,6 +118,14 @@ Catatan: `scripts/fetch-logos.mjs` mengambil ulang **semua** logo dan menulis ul
 
 ## Deploy ke GitHub + Vercel
 
+Repositori: [github.com/deayusts-ux/AKAFIZ-AI](https://github.com/deayusts-ux/AKAFIZ-AI)
+
+Deploy satu klik (login Vercel diperlukan sekali):
+
+[Deploy dengan Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fdeayusts-ux%2FAKAFIZ-AI&project-name=akafiz-ai)
+
+Atau impor manual:
+
 1. Buat repositori baru di GitHub, lalu dari folder proyek:
 
    ```bash
