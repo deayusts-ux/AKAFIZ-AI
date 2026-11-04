@@ -7,6 +7,24 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  async redirects() {
+    const cryptoPaths = [
+      "ebook",
+      "ebook/:slug",
+      "candlestick-lab",
+      "simulation",
+      "quiz",
+      "quiz/:slug",
+      "glossary",
+      "progress",
+      "game",
+    ];
+    return cryptoPaths.map((path) => ({
+      source: `/${path}`,
+      destination: `/crypto/${path}`,
+      permanent: false,
+    }));
+  },
   async headers() {
     return [
       {

@@ -9,6 +9,7 @@ import {
   Compass,
   CornerDownLeft,
   Flame,
+  GraduationCap,
   Heart,
   Info,
   LayoutGrid,
@@ -25,6 +26,7 @@ import { cn } from "@/lib/utils";
 
 const quickLinks = [
   { href: "/explore", label: "Explore semua AI", description: "Cari & filter 150 tool", icon: Compass },
+  { href: "/crypto", label: "Crypto Academy", description: "E-book, Candle Lab & kuis", icon: GraduationCap },
   { href: "/categories", label: "Semua kategori", description: "20 kategori terkurasi", icon: LayoutGrid },
   { href: "/trending", label: "Trending", description: "Tool paling populer minggu ini", icon: Flame },
   { href: "/favorites", label: "Favorit", description: "Koleksi pribadimu", icon: Heart },

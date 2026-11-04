@@ -1,8 +1,8 @@
 # LEGACY AI
 
-Direktori AI terkurasi: **150 tool**, **20 kategori**, tautan resmi, harga transparan, pencarian cepat, dan koleksi favorit yang tersimpan lokal — dengan portal akses privat dan halaman profil kreator.
+Direktori AI terkurasi: **150 tool**, **20 kategori**, tautan resmi, harga transparan, pencarian cepat, dan koleksi favorit yang tersimpan lokal — ditambah **Crypto Academy**, e-book interaktif 10 bab tentang fundamental crypto dan candlestick, lengkap dengan portal akses privat dan halaman profil kreator.
 
-Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 189 halaman di-prerender statis saat build, ditambah route dinamis untuk login, logout, permintaan kode, dan notifikasi.
+Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 219 halaman di-prerender statis saat build, ditambah route dinamis untuk login, logout, permintaan kode, dan notifikasi.
 
 ## Fitur
 
@@ -13,6 +13,7 @@ Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 
 - **Trending** dengan peringkat editor dan skor popularitas yang dapat ditelusuri.
 - **Favorit** tersimpan di `localStorage`, tersinkron antar-tab, dengan pencarian dan hapus semua.
 - **Tentang Saya** — halaman profil kreator dengan cerita, prinsip kurasi, keahlian, dan tautan proyek nyata.
+- **Crypto Academy** — e-book interaktif 10 bab, Candlestick Lab, simulasi baca candle, 100 soal kuis, glosarium A–Z, dasbor progres, dan game demo Bitcoin (detail di bawah).
 - **Portal akses** — halaman login sebelum masuk ke direktori, tombol **Minta kode** yang langsung menampilkan kode akses pribadi di formulir, sesi HttpOnly bertanda tangan, tombol keluar, serta email login untuk pemilik dan pengunjung.
 - **Command palette** (`⌘K` / `Ctrl+K` atau tombol cari) untuk navigasi dan pencarian cepat.
 - **Dark / light mode** tanpa flash saat halaman dimuat, responsif hingga mobile, animasi yang menghormati `prefers-reduced-motion`.
@@ -20,6 +21,36 @@ Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 
 - **Tanpa fake link**: setiap tombol kunjungan mengarah ke domain resmi produk dan dibuka di tab baru.
 
 Favorit bersifat lokal di browser — tidak ada akun, server penyimpanan, atau pelacakan pengguna.
+
+## Crypto Academy
+
+E-book interaktif berbahasa Indonesia dengan nuansa terminal trading. Seluruh chart memakai **data simulasi** dan diberi label jelas; tidak ada klaim harga real-time, sinyal beli/jual, atau janji keuntungan.
+
+**Materi — 10 bab**
+1. Pengenalan Crypto
+2. Fundamental Crypto
+3. Memahami Pasar
+4. Memahami Candlestick
+5. Pola Candlestick (11 pola: Doji, Hammer, Inverted Hammer, Shooting Star, Hanging Man, Bullish Engulfing, Bearish Engulfing, Morning Star, Evening Star, Pin Bar, Marubozu)
+6. Support & Resistance
+7. Volume
+8. Dasar Analisis Grafik
+9. Manajemen Risiko
+10. Membaca Berita Fundamental (CPI, PPI, NFP, FOMC, suku bunga Fed, inflasi AS, dan dampaknya ke crypto)
+
+**Fitur**
+- **Reader e-book** `/crypto/ebook/[slug]` — penjelasan bertahap, figur chart, callout, daftar isi sticky, bookmark, tandai selesai, mode baca, cetak/PDF, dan navigasi bab sebelumnya/berikutnya.
+- **Candlestick Lab** `/crypto/candlestick-lab` — chart SVG interaktif dengan zoom, pan, hover OHLC, pemilihan candle, volume, 6 timeframe (M1–D1), 4 preset pola, dan mode belajar.
+- **Simulasi** `/crypto/simulation` — 8 latihan membaca candle dengan umpan balik benar/salah, alasan, dan ilustrasi.
+- **Kuis** `/crypto/quiz` — 10 soal per bab (100 soal), skor otomatis, pembahasan tiap jawaban, dan nilai akhir.
+- **Glosarium** `/crypto/glossary` — 59 istilah A–Z dengan definisi dan contoh, pencarian, filter huruf dan kategori.
+- **Progres** `/crypto/progress` — ringkasan bab selesai, rata-rata kuis, simulasi, bookmark, dan streak game dari `localStorage`.
+- **Game demo** `/crypto/game` — saldo virtual $10.000, prediksi naik/turun 5 detik memakai harga API bursa bila tersedia, atau harga simulasi berlabel jelas bila tidak.
+- **Tentang** `/crypto/about` — prinsip data, batasan, dan 8 tautan resmi untuk belajar lanjut (bitcoin.org, ethereum.org, Binance Academy, TradingView, BLS, Federal Reserve, SEC, CoinMarketCap).
+
+Progres belajar disimpan di `localStorage` dengan kunci `legacy-ai:crypto-progress:v1`. Tidak ada data yang dikirim ke server.
+
+Disklaimer edukasi ditampilkan di setiap halaman: materi ini bukan saran investasi atau trading.
 
 ## Menjalankan secara lokal
 
@@ -34,7 +65,7 @@ Perintah lain:
 
 ```bash
 npm run typecheck   # TypeScript tanpa emit
-npm run build       # build produksi (189 halaman statis)
+npm run build       # build produksi (219 halaman statis)
 npm start           # menjalankan hasil build
 ```
 
@@ -111,15 +142,20 @@ src/
     api/logout/              # hapus cookie sesi
     login/                   # halaman portal akses
     tentang-saya/            # halaman profil kreator
+    crypto/                  # Crypto Academy (e-book, lab, simulasi, kuis, glosarium, progres, game, tentang)
     categories/[slug]/       # 20 halaman kategori statis
     tools/[slug]/            # 150 halaman detail tool statis
     sitemap.ts, robots.ts, manifest.ts, opengraph-image.tsx
   components/                # komponen UI reusable (cards, header, filters, command menu, dll.)
+    crypto/                  # chart SVG, reader tools, kuis, simulasi, glosarium, game, progres
     providers/               # favorites + toast context
   data/
     tools.ts                 # katalog utama 150 tool
     categories.ts            # 20 kategori
     logos.ts                 # peta logo lokal per slug
+    crypto/                  # 10 bab, 11 pola, 100 soal, 8 simulasi, 59 istilah
+  lib/
+    crypto/market.ts         # generator candle simulasi, timeframe, agregasi, formatter
   fonts/                     # font variabel lokal (Inter, Plus Jakarta Sans)
   lib/                       # tipe, util, auth sesi, notifikasi login, konfigurasi situs
   middleware.ts              # gerbang akses untuk seluruh halaman & API

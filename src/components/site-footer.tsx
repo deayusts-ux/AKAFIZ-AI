@@ -6,6 +6,9 @@ import { categories } from "@/data/categories";
 import { stats } from "@/data/tools";
 
 const directoryLinks = [
+  { href: "/crypto", label: "Crypto Academy" },
+  { href: "/crypto/ebook", label: "E-book crypto" },
+  { href: "/crypto/candlestick-lab", label: "Candlestick Lab" },
   { href: "/explore", label: "Explore semua tool" },
   { href: "/categories", label: "20 kategori AI" },
   { href: "/trending", label: "Trending minggu ini" },
@@ -18,7 +21,7 @@ export function SiteFooter() {
   const popular = categories.filter((category) => category.popular).slice(0, 5);
 
   return (
-    <footer className="relative mt-auto overflow-hidden border-t border-line/[0.07] pb-28 pt-14 lg:pb-10">
+    <footer className="site-footer relative mt-auto overflow-hidden border-t border-line/[0.07] pb-28 pt-14 lg:pb-10">
       <div
         className="ambient-orb -bottom-56 left-1/3 h-[26rem] w-[26rem] bg-iris/15"
         aria-hidden="true"

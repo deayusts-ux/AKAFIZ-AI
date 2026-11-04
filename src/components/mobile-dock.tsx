@@ -19,7 +19,7 @@ export function MobileDock() {
   const { count, ready } = useFavorites();
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
+    <div className="mobile-dock fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
       <nav
         aria-label="Navigasi cepat"
         className="glass-strong grid w-full max-w-[26rem] grid-cols-5 items-center gap-0.5 rounded-2xl px-1.5 py-1.5"

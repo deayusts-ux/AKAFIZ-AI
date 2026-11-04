@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 const navLinks = [
   { href: "/", label: "Beranda" },
   { href: "/explore", label: "Explore AI" },
+  { href: "/crypto", label: "Crypto Academy" },
   { href: "/categories", label: "Kategori" },
   { href: "/trending", label: "Trending" },
   { href: "/favorites", label: "Favorit" },
@@ -24,6 +25,7 @@ function isActive(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
   if (href === "/explore") return pathname === "/explore" || pathname.startsWith("/tools");
   if (href === "/categories") return pathname.startsWith("/categories");
+  if (href === "/crypto") return pathname === "/crypto" || pathname.startsWith("/crypto/");
   return pathname === href;
 }
 
@@ -47,7 +49,7 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-line/[0.06] bg-canvas/75 backdrop-blur-2xl">
+      <header className="site-header sticky top-0 z-50 border-b border-line/[0.06] bg-canvas/75 backdrop-blur-2xl">
       <div className="container-page flex h-16 items-center justify-between gap-3">
         <Brand />
 
@@ -67,8 +69,8 @@ export function SiteHeader() {
         <div className="flex items-center gap-1.5">
           <CommandTrigger className="hidden h-9 items-center gap-2 rounded-full border border-line/10 bg-line/[0.035] pl-3 pr-2 text-xs text-muted transition-all duration-300 hover:border-line/20 hover:bg-line/[0.07] hover:text-ink sm:inline-flex">
             <Search className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="hidden md:inline">Cari AI…</span>
-            <kbd className="ml-2 hidden rounded-md border border-line/10 bg-canvas/60 px-1.5 py-0.5 font-sans text-[9px] font-semibold text-muted md:inline">
+            <span className="hidden whitespace-nowrap 2xl:inline">Cari AI…</span>
+            <kbd className="ml-2 hidden rounded-md border border-line/10 bg-canvas/60 px-1.5 py-0.5 font-sans text-[9px] font-semibold text-muted 2xl:inline">
               ⌘K
             </kbd>
           </CommandTrigger>
