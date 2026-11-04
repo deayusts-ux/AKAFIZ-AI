@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 const navLinks = [
   { href: "/", label: "Beranda" },
   { href: "/explore", label: "Explore AI" },
+  { href: "/explore-idea", label: "Explore Idea" },
   { href: "/crypto", label: "Crypto Academy" },
   { href: "/categories", label: "Kategori" },
   { href: "/trending", label: "Trending" },
@@ -24,6 +25,7 @@ const navLinks = [
 function isActive(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
   if (href === "/explore") return pathname === "/explore" || pathname.startsWith("/tools");
+  if (href === "/explore-idea") return pathname.startsWith("/explore-idea");
   if (href === "/categories") return pathname.startsWith("/categories");
   if (href === "/crypto") return pathname === "/crypto" || pathname.startsWith("/crypto/");
   return pathname === href;

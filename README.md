@@ -1,13 +1,14 @@
 # LEGACY AI
 
-Direktori AI terkurasi: **150 tool**, **20 kategori**, tautan resmi, harga transparan, pencarian cepat, dan koleksi favorit yang tersimpan lokal — ditambah **Crypto Academy**, e-book interaktif 10 bab tentang fundamental crypto dan candlestick, lengkap dengan portal akses privat dan halaman profil kreator.
+Direktori AI terkurasi: **150 tool**, **20 kategori**, tautan resmi, harga transparan, pencarian cepat, dan koleksi favorit yang tersimpan lokal — ditambah **Explore Idea** (58 sumber referensi di 14 bidang), **Crypto Academy**, e-book interaktif 10 bab tentang fundamental crypto dan candlestick, lengkap dengan portal akses privat dan halaman profil kreator.
 
-Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 219 halaman di-prerender statis saat build, ditambah route dinamis untuk login, logout, permintaan kode, dan notifikasi.
+Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 293 halaman di-prerender statis saat build, ditambah route dinamis untuk login, logout, permintaan kode, dan notifikasi.
 
 ## Fitur
 
 - **Beranda** dengan hero, pencarian, kategori populer, spotlight editor, dan daftar tool yang sedang trending.
 - **Explore AI** dengan pencarian nama/fungsi/kategori, filter kategori dan harga (Gratis, Freemium, Berbayar), urutan, tampilan grid/list, serta URL yang selalu sinkron dengan filter.
+- **Explore Idea** — direktori 58 sumber referensi di 14 bidang (arsitektur, akuntansi, informatika, sipil, hukum, kesehatan, bisnis, desain, psikologi, pertanian, elektro, pendidikan, komunikasi, sains) dengan pencarian, filter kategori dan jenis, urutan, tampilan grid/list, serta halaman detail per sumber (detail di bawah).
 - **Kategori** — 20 halaman kategori dengan daftar tool, statistik, filter, dan rekomendasi kategori terkait.
 - **Halaman detail tool** berisi deskripsi, fitur, harga, rating editorial, alternatif serupa, serta tombol kunjungan ke situs resmi.
 - **Trending** dengan peringkat editor dan skor popularitas yang dapat ditelusuri.
@@ -21,6 +22,37 @@ Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 
 - **Tanpa fake link**: setiap tombol kunjungan mengarah ke domain resmi produk dan dibuka di tab baru.
 
 Favorit bersifat lokal di browser — tidak ada akun, server penyimpanan, atau pelacakan pengguna.
+
+## Explore Idea
+
+Direktori sumber ide dan referensi untuk 14 bidang studi dan profesi. Setiap sumber hanya tampil sekali meski relevan di beberapa bidang, dan seluruh tautan menuju situs resmi.
+
+**Bidang & sumber**
+1. Arsitektur & Desain Bangunan — ArchDaily, Dezeen, Divisare, Designboom, Behance
+2. Akuntansi & Keuangan — AccountingCoach, CFI, Investopedia, IFRS, Khan Academy
+3. Teknik Informatika & Komputer — freeCodeCamp, W3Schools, GitHub, Stack Overflow, MDN
+4. Teknik Sipil — The Constructor, Civil Engineering Web, Structurae, ASCE
+5. Hukum — Hukumonline, Peraturan BPK, JDIHN, Google Scholar
+6. Kedokteran & Kesehatan — PubMed, MedlinePlus, WHO, NCBI
+7. Manajemen & Bisnis — Harvard Business Review, Strategyzer, HubSpot, Shopify Blog, McKinsey
+8. Desain Grafis & DKV — Behance, Dribbble, Awwwards, Freepik, Google Fonts
+9. Psikologi — APA, Psychology Today, Google Scholar, Simply Psychology
+10. Pertanian & Peternakan — FAO, Kementerian Pertanian, Portal Pertanian, ScienceDirect
+11. Teknik Elektro & Mesin — IEEE, All About Circuits, Engineering ToolBox, GrabCAD
+12. Pendidikan & Keguruan — Edutopia, Khan Academy, TeacherMade, Coursera
+13. Ilmu Komunikasi & Jurnalistik — Poynter, Reuters, AP Stylebook, Canva
+14. Matematika & Sains — Wolfram Alpha, Desmos, GeoGebra, Khan Academy, Nature
+
+**Fitur**
+- **Halaman utama** `/explore-idea` — pencarian nama/deskripsi/kategori/tag, filter bidang dan jenis sumber (referensi, pembelajaran, alat, portofolio, berita, database), urutan relevansi/nama/kategori, tampilan grid/list, dan tombol muat lebih banyak.
+- **Peta bidang** `/explore-idea/kategori` — 14 kartu bidang dengan jumlah sumber dan tautan cepat.
+- **Halaman bidang** `/explore-idea/kategori/[slug]` — daftar sumber bidang tersebut, pencarian dan filter jenis, serta tautan ke bidang lain.
+- **Halaman sumber** `/explore-idea/[slug]` — deskripsi, kegunaan, sorotan, tag, bidang, jenis, bahasa, domain resmi, catatan lisensi, dan sumber terkait.
+- **Sinkron dengan URL** — filter tersimpan di query (`q`, `category`, `kind`, `sort`) sehingga tautan hasil pencarian bisa dibagikan dan dibuka ulang.
+- Tombol **Kunjungi** dan **Buka situs resmi** membuka domain resmi di tab baru dengan `rel="noopener noreferrer"`.
+
+LEGACY AI tidak berafiliasi dengan sumber-sumber tersebut. Materi dan lisensi setiap sumber mengikuti ketentuan penyedianya; halaman detail selalu mengingatkan untuk memeriksanya.
+
 
 ## Crypto Academy
 
@@ -65,7 +97,7 @@ Perintah lain:
 
 ```bash
 npm run typecheck   # TypeScript tanpa emit
-npm run build       # build produksi (219 halaman statis)
+npm run build       # build produksi (293 halaman statis)
 npm start           # menjalankan hasil build
 ```
 
@@ -143,19 +175,24 @@ src/
     login/                   # halaman portal akses
     tentang-saya/            # halaman profil kreator
     crypto/                  # Crypto Academy (e-book, lab, simulasi, kuis, glosarium, progres, game, tentang)
+    explore-idea/            # Explore Idea: direktori, peta bidang, kategori, detail sumber
     categories/[slug]/       # 20 halaman kategori statis
     tools/[slug]/            # 150 halaman detail tool statis
     sitemap.ts, robots.ts, manifest.ts, opengraph-image.tsx
   components/                # komponen UI reusable (cards, header, filters, command menu, dll.)
     crypto/                  # chart SVG, reader tools, kuis, simulasi, glosarium, game, progres
+    idea/                    # kartu, baris, monogram, dan panel filter Explore Idea
     providers/               # favorites + toast context
   data/
     tools.ts                 # katalog utama 150 tool
     categories.ts            # 20 kategori
     logos.ts                 # peta logo lokal per slug
+    ideas.ts                 # 58 sumber referensi Explore Idea
+    idea-categories.ts       # 14 bidang Explore Idea
     crypto/                  # 10 bab, 11 pola, 100 soal, 8 simulasi, 59 istilah
   lib/
     crypto/market.ts         # generator candle simulasi, timeframe, agregasi, formatter
+    idea-types.ts, idea-icons.ts # tipe sumber dan peta ikon bidang
   fonts/                     # font variabel lokal (Inter, Plus Jakarta Sans)
   lib/                       # tipe, util, auth sesi, notifikasi login, konfigurasi situs
   middleware.ts              # gerbang akses untuk seluruh halaman & API
@@ -209,6 +246,7 @@ Catatan: `scripts/fetch-logos.mjs` mengambil ulang **semua** logo dan menulis ul
 - Harga adalah titik mulai editorial dan dapat berubah; halaman detail selalu mengarahkan pengguna untuk mengonfirmasi di situs resmi.
 - Rating adalah penilaian editorial LEGACY AI, bukan ulasan pengguna atau jumlah ulasan palsu.
 - PlayHT resmi ditutup setelah akuisisi dan berhenti beroperasi pada akhir 2025. Entri tersebut diganti dengan **Resemble AI**, tool suara real-time yang masih aktif, agar tidak ada tautan mati.
+- Sumber Explore Idea adalah situs resmi lembaga, penerbit, atau komunitas terkait. Tidak ada peringkat, jumlah pengguna, atau klaim afiliasi yang dibuat-buat; deskripsi ditulis sebagai ringkasan editorial. Beberapa sumber sengaja muncul di lebih dari satu bidang (mis. Behance, Khan Academy, Google Scholar) dan dihitung sekali dalam total 58 sumber.
 
 ## Deploy ke GitHub + Vercel
 

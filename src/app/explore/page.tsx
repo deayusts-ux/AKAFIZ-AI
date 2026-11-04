@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Compass, Sparkles } from "lucide-react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ExploreClient } from "@/components/explore-client";
+import { ExploreSwitch } from "@/components/explore-switch";
 import { stats } from "@/data/tools";
 import { formatNumber } from "@/lib/utils";
 
@@ -44,7 +45,11 @@ export default function ExplorePage() {
     <div className="container-page pb-16 pt-8">
       <Breadcrumbs items={[{ label: "Explore AI" }]} />
 
-      <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mt-6">
+        <ExploreSwitch active="ai" />
+      </div>
+
+      <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="max-w-2xl">
           <p className="section-label">
             <span className="h-px w-5 bg-gradient-to-r from-iris to-aqua" aria-hidden="true" />

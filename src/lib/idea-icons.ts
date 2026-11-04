@@ -1,0 +1,35 @@
+import {
+  Brain,
+  Briefcase,
+  Building2,
+  Calculator,
+  Code2,
+  GraduationCap,
+  HardHat,
+  Palette,
+  Radio,
+  Scale,
+  Sigma,
+  Sprout,
+  Stethoscope,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
+import type { IdeaIconKey } from "@/lib/idea-types";
+
+export const ideaIcons: Record<IdeaIconKey, LucideIcon> = {
+  building: Building2,
+  calculator: Calculator,
+  code: Code2,
+  hardhat: HardHat,
+  scale: Scale,
+  health: Stethoscope,
+  briefcase: Briefcase,
+  palette: Palette,
+  psychology: Brain,
+  sprout: Sprout,
+  bolt: Zap,
+  education: GraduationCap,
+  radio: Radio,
+  sigma: Sigma,
+};

@@ -10,6 +10,8 @@ const directoryLinks = [
   { href: "/crypto/ebook", label: "E-book crypto" },
   { href: "/crypto/candlestick-lab", label: "Candlestick Lab" },
   { href: "/explore", label: "Explore semua tool" },
+  { href: "/explore-idea", label: "Explore sumber ide" },
+  { href: "/explore-idea/kategori", label: "14 bidang referensi" },
   { href: "/categories", label: "20 kategori AI" },
   { href: "/trending", label: "Trending minggu ini" },
   { href: "/favorites", label: "Koleksi favoritmu" },

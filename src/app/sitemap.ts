@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { categories } from "@/data/categories";
 import { cryptoChapters } from "@/data/crypto/chapters";
+import { ideaCategories } from "@/data/idea-categories";
+import { ideas } from "@/data/ideas";
 import { tools } from "@/data/tools";
 import { site } from "@/lib/site";
 
@@ -11,6 +13,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: base, lastModified, changeFrequency: "daily", priority: 1 },
     { url: `${base}/explore`, lastModified, changeFrequency: "daily", priority: 0.9 },
+    { url: `${base}/explore-idea`, lastModified, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${base}/explore-idea/kategori`, lastModified, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/categories`, lastModified, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/trending`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${base}/favorites`, lastModified, changeFrequency: "monthly", priority: 0.4 },
@@ -56,5 +60,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ]);
 
-  return [...staticRoutes, ...categoryRoutes, ...toolRoutes, ...cryptoChapterRoutes];
+  const ideaCategoryRoutes: MetadataRoute.Sitemap = ideaCategories.map((category) => ({
+    url: `${base}/explore-idea/kategori/${category.slug}`,
+    lastModified,
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
+  const ideaSourceRoutes: MetadataRoute.Sitemap = ideas.map((idea) => ({
+    url: `${base}/explore-idea/${idea.slug}`,
+    lastModified,
+    changeFrequency: "monthly",
+    priority: 0.55,
+  }));
+
+  return [
+    ...staticRoutes,
+    ...categoryRoutes,
+    ...toolRoutes,
+    ...cryptoChapterRoutes,
+    ...ideaCategoryRoutes,
+    ...ideaSourceRoutes,
+  ];
 }
