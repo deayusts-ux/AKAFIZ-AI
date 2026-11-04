@@ -49,7 +49,8 @@ cp .env.example .env.local
 | Variabel | Wajib | Keterangan |
 | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Tidak | URL kanonik produksi, mis. `https://legacyai.example.com`. Dipakai untuk metadata, sitemap, dan JSON-LD. |
-| `LEGACY_ACCESS_CODE` | Disarankan | Kode akses portal. Default di source: `LEGACY-2026`. Ganti sebelum deploy produksi. |
+| `LEGACY_ACCESS_CODES` | Disarankan | Daftar kode akses, dipisahkan koma, spasi, atau baris baru. Jika diisi, menggantikan `LEGACY_ACCESS_CODE`. |
+| `LEGACY_ACCESS_CODE` | Tidak | Satu kode akses. Dipakai bila `LEGACY_ACCESS_CODES` kosong. Default di source: `LEGACY-2026`. |
 | `AUTH_SECRET` | Disarankan | Kunci HMAC untuk cookie sesi. Gunakan string acak panjang (min. 32 karakter). |
 | `LEGACY_OWNER_EMAIL` | Tidak | Penerima riwayat login. Default: `deayusts@gmail.com`. |
 | `GMAIL_USER` | Tidak | Alamat Gmail pengirim, default mengikuti `LEGACY_OWNER_EMAIL`. |
@@ -64,7 +65,8 @@ Saat deploy di Vercel, `VERCEL_PROJECT_PRODUCTION_URL` terdeteksi otomatis sehin
 Semua halaman direktori dilindungi `src/middleware.ts`. Pengunjung tanpa sesi diarahkan ke `/login`, lalu kembali ke halaman tujuan setelah berhasil masuk.
 
 - Login memakai **email pengunjung + kode akses** yang dibagikan pemilik portal. Tidak ada login pihak ketiga.
-- Sesi disimpan dalam cookie `HttpOnly` bertanda tangan HMAC: 12 jam, atau 7 hari bila "Ingat perangkat ini" dicentang.
+- Sesi disimpan dalam cookie `HttpOnly` bertanda tangan HMAC: 12 jam, atau **1 tahun** bila "Tetap masuk di perangkat ini" dicentang (aktif secara default).
+- `LEGACY_ACCESS_CODES` menerima banyak kode sekaligus. Setiap kode dalam daftar berlaku untuk semua pengunjung, dan pengunjung yang sudah berhasil masuk tidak perlu memasukkan kode lagi sampai sesi berakhir atau mereka keluar.
 - Setiap login berhasil mengirim **dua email** (saat kanal email aktif) dengan nama pengirim `LEGACY AI`:
   - **Pemilik portal** menerima riwayat lengkap: waktu (WIB), email pengguna, perangkat, browser, IP, dan perkiraan lokasi.
   - **Pengunjung** menerima konfirmasi singkat: waktu, perangkat, dan browser, plus arahan untuk menghubungi pemilik bila tidak merasa login.
@@ -93,7 +95,7 @@ Fallback **ShipMyForm** mengirim email aktivasi pada pengiriman pertama. Buka ko
 
 Portal ini adalah gerbang privasi ringan, bukan sistem akun multi-pengguna. Untuk keamanan lebih kuat, ganti kode akses, set `AUTH_SECRET`, dan gunakan App Password khusus yang bisa dicabut kapan saja.
 
-Untuk menguji alur login secara lokal: jalankan `npm run dev`, buka `/login`, gunakan kode akses dari environment (default `LEGACY-2026`), lalu periksa inbox pemilik dan pengunjung.
+Untuk menguji alur login secara lokal: jalankan `npm run dev`, buka `/login`, gunakan salah satu kode dari `LEGACY_ACCESS_CODES` (atau `LEGACY-2026` bila daftar kosong), lalu periksa inbox pemilik dan pengunjung.
 
 ## Struktur proyek
 
@@ -194,7 +196,7 @@ Atau impor manual:
    - Output: `.next`
 3. Tambahkan environment variable berikut di **Settings → Environment Variables**, lalu deploy:
    - `NEXT_PUBLIC_SITE_URL` — domain final (opsional bila memakai domain Vercel).
-   - `LEGACY_ACCESS_CODE` — kode akses portal pilihanmu.
+   - `LEGACY_ACCESS_CODES` — daftar kode akses, mis. `729418,583027,916482`. Alternatifnya `LEGACY_ACCESS_CODE` untuk satu kode.
    - `AUTH_SECRET` — string acak panjang untuk menandatangani cookie sesi.
    - `LEGACY_OWNER_EMAIL` — email penerima notifikasi login.
    - `RESEND_API_KEY` — opsional; tanpa ini notifikasi memakai ShipMyForm.

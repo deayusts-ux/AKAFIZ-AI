@@ -182,7 +182,7 @@ function buildOwnerMessage(event: LoginEvent) {
     "",
     `User agent: ${userAgent}`,
     "",
-    "Jika ini bukan kamu, segera ganti LEGACY_ACCESS_CODE dan AUTH_SECRET di pengaturan deployment.",
+    "Jika ini bukan kamu, segera ganti kode akses (LEGACY_ACCESS_CODES) dan AUTH_SECRET di pengaturan deployment.",
     "Kode akses tidak pernah disertakan dalam email ini.",
     site.url,
   ].join("\n");
@@ -194,7 +194,7 @@ function buildOwnerMessage(event: LoginEvent) {
     badge: "LOGIN BERHASIL",
     rows,
     footnote: `User agent: ${userAgent}`,
-    note: "Jika ini bukan kamu, segera ganti LEGACY_ACCESS_CODE dan AUTH_SECRET di pengaturan deployment. Kode akses tidak pernah disertakan dalam email ini.",
+    note: "Jika ini bukan kamu, segera ganti kode akses (LEGACY_ACCESS_CODES) dan AUTH_SECRET di pengaturan deployment. Kode akses tidak pernah disertakan dalam email ini.",
   });
 
   return { text, html, time };
@@ -371,7 +371,7 @@ async function sendWithShipMyForm(
   form.set("Status", "Berhasil masuk");
   form.set(
     "Catatan",
-    "Kode akses tidak disertakan. Jika ini bukan kamu, ganti LEGACY_ACCESS_CODE dan AUTH_SECRET.",
+    "Kode akses tidak disertakan. Jika ini bukan kamu, ganti LEGACY_ACCESS_CODES dan AUTH_SECRET.",
   );
 
   const response = await fetch(`https://shipmyform.com/to/${encodeURIComponent(OWNER_EMAIL)}`, {

@@ -171,7 +171,7 @@ export function LoginForm({
               className="mt-0.5 h-4 w-4 shrink-0 rounded border-line/20 bg-canvas/50 accent-iris"
             />
             <span>
-              Ingat perangkat ini selama 7 hari. Tanpa ini, sesi berakhir otomatis dalam 12 jam.
+              Tetap masuk di perangkat ini selama 1 tahun. Tanpa ini, sesi berakhir dalam 12 jam.
             </span>
           </label>
 

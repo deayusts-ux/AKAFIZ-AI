@@ -3,7 +3,7 @@ const decoder = new TextDecoder();
 
 export const SESSION_COOKIE = "legacy_ai_session";
 export const SESSION_SHORT_SECONDS = 60 * 60 * 12;
-export const SESSION_REMEMBER_SECONDS = 60 * 60 * 24 * 7;
+export const SESSION_REMEMBER_SECONDS = 60 * 60 * 24 * 365;
 
 const FALLBACK_SECRET = "legacy-ai-portal-dev-secret-change-me";
 const FALLBACK_ACCESS_CODE = "LEGACY-2026";
@@ -19,8 +19,16 @@ function getSigningSecret(): string {
   return process.env.AUTH_SECRET?.trim() || FALLBACK_SECRET;
 }
 
-function accessCode(): string {
-  return process.env.LEGACY_ACCESS_CODE?.trim() || FALLBACK_ACCESS_CODE;
+function configuredAccessCodes(): string[] {
+  const list = process.env.LEGACY_ACCESS_CODES;
+  if (list) {
+    const parsed = list
+      .split(/[\s,;]+/)
+      .map((code) => code.trim())
+      .filter(Boolean);
+    if (parsed.length > 0) return parsed;
+  }
+  return [process.env.LEGACY_ACCESS_CODE?.trim() || FALLBACK_ACCESS_CODE];
 }
 
 export function toBase64Url(bytes: Uint8Array): string {
@@ -53,14 +61,32 @@ async function sha256(value: string): Promise<Uint8Array> {
   return new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(value)));
 }
 
+let accessHashCache: { key: string; hashes: Uint8Array[] } | null = null;
+
+async function expectedAccessHashes(): Promise<Uint8Array[]> {
+  const codes = configuredAccessCodes();
+  const key = codes.join("\u0000");
+  if (accessHashCache?.key === key) return accessHashCache.hashes;
+
+  const hashes = await Promise.all(codes.map((code) => sha256(code)));
+  accessHashCache = { key, hashes };
+  return hashes;
+}
+
 export async function verifyAccessCode(input: string): Promise<boolean> {
   const candidate = input.trim();
   if (!candidate) return false;
-  const [candidateHash, expectedHash] = await Promise.all([
+
+  const [candidateHash, expectedHashes] = await Promise.all([
     sha256(candidate),
-    sha256(accessCode()),
+    expectedAccessHashes(),
   ]);
-  return constantTimeEqual(candidateHash, expectedHash);
+
+  let matched = false;
+  for (const hash of expectedHashes) {
+    matched = constantTimeEqual(candidateHash, hash) || matched;
+  }
+  return matched;
 }
 
 async function sign(value: string): Promise<string> {
