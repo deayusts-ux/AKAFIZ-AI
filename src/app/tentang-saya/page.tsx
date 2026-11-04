@@ -41,9 +41,9 @@ export const metadata: Metadata = {
     url: "/tentang-saya",
     images: [
       {
-        url: "/profile/akmal-avatar.png",
-        width: 420,
-        height: 420,
+        url: "/profile/akmal-avatar.jpg",
+        width: 640,
+        height: 640,
         alt: "Akmal Faiz",
       },
     ],
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     title: "Tentang Saya — Akmal Faiz",
     description:
       "AI Engineer & Product Designer di balik LEGACY AI. Kurasi independen, tautan resmi, dan antarmuka yang mudah dipakai.",
-    images: ["/profile/akmal-avatar.png"],
+    images: ["/profile/akmal-avatar.jpg"],
   },
 };
 
@@ -173,7 +173,7 @@ export default function TentangSayaPage() {
       jobTitle: "AI Engineer & Product Designer",
       email: "mailto:deayusts@gmail.com",
       url: `${site.url}/tentang-saya`,
-      image: `${site.url}/profile/akmal-avatar.png`,
+      image: `${site.url}/profile/akmal-avatar.jpg`,
       sameAs: ["https://github.com/deayusts-ux"],
       knowsAbout: ["Artificial Intelligence", "Product Design", "Next.js", "TypeScript"],
     },
@@ -230,10 +230,10 @@ export default function TentangSayaPage() {
                   aria-hidden="true"
                 />
                 <Image
-                  src="/profile/akmal-avatar.png"
+                  src="/profile/akmal-avatar.jpg"
                   alt="Foto profil Akmal Faiz"
-                  width={420}
-                  height={420}
+                  width={640}
+                  height={640}
                   priority
                   className="relative h-24 w-24 rounded-2xl border border-white/15 bg-white object-cover shadow-xl"
                 />
