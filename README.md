@@ -13,7 +13,7 @@ Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 
 - **Trending** dengan peringkat editor dan skor popularitas yang dapat ditelusuri.
 - **Favorit** tersimpan di `localStorage`, tersinkron antar-tab, dengan pencarian dan hapus semua.
 - **Tentang Saya** — halaman profil kreator dengan cerita, prinsip kurasi, keahlian, dan tautan proyek nyata.
-- **Portal akses** — halaman login sebelum masuk ke direktori, sesi HttpOnly bertanda tangan, tombol keluar, dan pemberitahuan login ke email pemilik.
+- **Portal akses** — halaman login sebelum masuk ke direktori, sesi HttpOnly bertanda tangan, tombol keluar, serta email login untuk pemilik dan pengunjung.
 - **Command palette** (`⌘K` / `Ctrl+K` atau tombol cari) untuk navigasi dan pencarian cepat.
 - **Dark / light mode** tanpa flash saat halaman dimuat, responsif hingga mobile, animasi yang menghormati `prefers-reduced-motion`.
 - **SEO lengkap**: metadata per halaman, canonical, Open Graph image, JSON-LD, sitemap, robots, dan manifest.
@@ -51,8 +51,10 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_SITE_URL` | Tidak | URL kanonik produksi, mis. `https://legacyai.example.com`. Dipakai untuk metadata, sitemap, dan JSON-LD. |
 | `LEGACY_ACCESS_CODE` | Disarankan | Kode akses portal. Default di source: `LEGACY-2026`. Ganti sebelum deploy produksi. |
 | `AUTH_SECRET` | Disarankan | Kunci HMAC untuk cookie sesi. Gunakan string acak panjang (min. 32 karakter). |
-| `LEGACY_OWNER_EMAIL` | Tidak | Penerima notifikasi login. Default: `deayusts@gmail.com`. |
-| `RESEND_API_KEY` | Tidak | Aktifkan pengiriman email langsung lewat Resend. Bila kosong, notifikasi memakai ShipMyForm. |
+| `LEGACY_OWNER_EMAIL` | Tidak | Penerima riwayat login. Default: `deayusts@gmail.com`. |
+| `GMAIL_USER` | Tidak | Alamat Gmail pengirim, default mengikuti `LEGACY_OWNER_EMAIL`. |
+| `GMAIL_APP_PASSWORD` | Tidak | App Password Gmail 16 karakter. Bila diisi, email dikirim lewat Gmail SMTP atas nama `LEGACY AI` ke pemilik dan pengunjung. |
+| `RESEND_API_KEY` | Tidak | Alternatif pengiriman lewat Resend. Tanpa domain terverifikasi, Resend hanya bisa mengirim ke pemilik. |
 | `RESEND_FROM` | Tidak | Pengirim Resend, default `LEGACY AI <onboarding@resend.dev>`. |
 
 Saat deploy di Vercel, `VERCEL_PROJECT_PRODUCTION_URL` terdeteksi otomatis sehingga sitemap dan metadata memakai domain produksi tanpa konfigurasi tambahan. Tetap disarankan mengisi `NEXT_PUBLIC_SITE_URL` bila memakai domain kustom.
@@ -63,12 +65,35 @@ Semua halaman direktori dilindungi `src/middleware.ts`. Pengunjung tanpa sesi di
 
 - Login memakai **email pengunjung + kode akses** yang dibagikan pemilik portal. Tidak ada login pihak ketiga.
 - Sesi disimpan dalam cookie `HttpOnly` bertanda tangan HMAC: 12 jam, atau 7 hari bila "Ingat perangkat ini" dicentang.
-- Setiap login berhasil mengirim notifikasi ke `LEGACY_OWNER_EMAIL` berisi waktu (WIB), email pengguna, perangkat, browser, IP, dan perkiraan lokasi. **Kode akses tidak pernah disertakan di email.**
-- Pengiriman email memakai **Resend** bila `RESEND_API_KEY` tersedia. Tanpa key, aplikasi memakai **ShipMyForm** sebagai fallback tanpa registrasi.
-- ShipMyForm mengirim email aktivasi pada pengiriman pertama. Buka kotak masuk pemilik, klik tautan aktivasi, lalu login sekali lagi agar notifikasi berikutnya terkirim. Tautan aktivasi berlaku 14 hari.
-- Portal ini adalah gerbang privasi ringan, bukan sistem akun multi-pengguna. Untuk keamanan lebih kuat, ganti kode akses, set `AUTH_SECRET`, dan gunakan Resend dengan domain terverifikasi.
+- Setiap login berhasil mengirim **dua email** (saat kanal email aktif) dengan nama pengirim `LEGACY AI`:
+  - **Pemilik portal** menerima riwayat lengkap: waktu (WIB), email pengguna, perangkat, browser, IP, dan perkiraan lokasi.
+  - **Pengunjung** menerima konfirmasi singkat: waktu, perangkat, dan browser, plus arahan untuk menghubungi pemilik bila tidak merasa login.
+- **Kode akses tidak pernah disertakan di email mana pun.**
+- Urutan kanal: **Gmail SMTP** (`GMAIL_APP_PASSWORD`) → **Resend** (`RESEND_API_KEY`) → **ShipMyForm** (fallback tanpa registrasi, hanya mengirim ke pemilik).
 
-Untuk menguji alur login secara lokal: jalankan `npm run dev`, buka `/login`, gunakan kode akses dari environment (default `LEGACY-2026`), lalu periksa email pemilik setelah login.
+### Mengaktifkan notifikasi Gmail
+
+Cara paling mudah adalah memakai Gmail pemilik portal:
+
+1. Aktifkan **2-Step Verification** di akun Google `deayusts@gmail.com`.
+2. Buka **Google Account → Security → App passwords**, buat password baru bernama `LEGACY AI`.
+3. Salin 16 karakter yang muncul (boleh dengan atau tanpa spasi).
+4. Isi environment:
+
+   ```bash
+   GMAIL_USER=deayusts@gmail.com
+   GMAIL_APP_PASSWORD=abcd efgh ijkl mnop
+   ```
+
+5. Restart server lokal atau redeploy. Setelah itu login akan mengirim riwayat ke pemilik dan konfirmasi ke email pengunjung.
+
+Alternatif **Resend**: isi `RESEND_API_KEY` dan `RESEND_FROM`. Untuk mengirim ke pengunjung, gunakan domain pengirim yang sudah terverifikasi; pengirim bawaan `onboarding@resend.dev` hanya dapat menjangkau email pemilik akun.
+
+Fallback **ShipMyForm** mengirim email aktivasi pada pengiriman pertama. Buka kotak masuk pemilik, klik tautan aktivasi (berlaku 14 hari), lalu login sekali lagi. ShipMyForm tidak dapat mengirim konfirmasi ke pengunjung.
+
+Portal ini adalah gerbang privasi ringan, bukan sistem akun multi-pengguna. Untuk keamanan lebih kuat, ganti kode akses, set `AUTH_SECRET`, dan gunakan App Password khusus yang bisa dicabut kapan saja.
+
+Untuk menguji alur login secara lokal: jalankan `npm run dev`, buka `/login`, gunakan kode akses dari environment (default `LEGACY-2026`), lalu periksa inbox pemilik dan pengunjung.
 
 ## Struktur proyek
 

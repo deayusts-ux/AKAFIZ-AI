@@ -15,7 +15,13 @@ import {
 } from "lucide-react";
 import { useToast } from "@/components/providers/toast-provider";
 
-export function LoginForm({ nextPath }: { nextPath: string }) {
+export function LoginForm({
+  nextPath,
+  emailReady,
+}: {
+  nextPath: string;
+  emailReady: boolean;
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
@@ -38,7 +44,12 @@ export function LoginForm({ nextPath }: { nextPath: string }) {
         body: JSON.stringify({ email, accessCode, remember }),
       });
       const data = (await response.json().catch(() => null)) as
-        | { ok?: boolean; error?: string; notified?: boolean }
+        | {
+            ok?: boolean;
+            error?: string;
+            notified?: boolean;
+            visitorNotified?: boolean;
+          }
         | null;
 
       if (!response.ok || !data?.ok) {
@@ -50,9 +61,11 @@ export function LoginForm({ nextPath }: { nextPath: string }) {
       if (data.notified === false) {
         toast(
           "Login berhasil",
-          "Notifikasi email belum terkirim. Pemilik portal perlu mengaktifkan email notifikasi sekali.",
+          "Notifikasi email belum terkirim. Pemilik portal perlu mengaktifkan kanal email sekali.",
         );
         await new Promise((resolve) => window.setTimeout(resolve, 1600));
+      } else if (data.visitorNotified) {
+        toast("Login berhasil", "Konfirmasi login juga dikirim ke email Anda.");
       }
 
       router.replace(nextPath);
@@ -193,8 +206,9 @@ export function LoginForm({ nextPath }: { nextPath: string }) {
         <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-line/[0.08] bg-line/[0.025] p-3.5">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden="true" />
           <p className="text-[11px] leading-relaxed text-muted">
-            Setiap login berhasil mengirim pemberitahuan ke email pemilik portal, lengkap dengan
-            waktu, perangkat, dan perkiraan lokasi. Kode akses tidak pernah dikirim lewat email.
+            {emailReady
+              ? "Setiap login mengirim riwayat ke pemilik portal dan konfirmasi ke email Anda, lengkap dengan waktu dan perangkat. Kode akses tidak pernah dikirim lewat email."
+              : "Notifikasi email belum aktif. Pemilik portal dapat mengaktifkannya lewat Gmail App Password atau Resend. Kode akses tidak pernah dikirim lewat email."}
           </p>
         </div>
       </div>

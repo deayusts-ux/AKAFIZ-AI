@@ -103,7 +103,11 @@ export async function POST(request: NextRequest) {
   });
 
   const response = NextResponse.json(
-    { ok: true, notified: notification.delivered },
+    {
+      ok: true,
+      notified: notification.delivered,
+      visitorNotified: notification.visitorDelivered,
+    },
     { headers: { "Cache-Control": "no-store" } },
   );
 

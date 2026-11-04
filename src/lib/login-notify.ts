@@ -1,3 +1,4 @@
+import { createTransport } from "nodemailer";
 import { site } from "@/lib/site";
 
 export interface LoginEvent {
@@ -12,10 +13,44 @@ export interface LoginEvent {
 
 export interface NotifyResult {
   delivered: boolean;
-  channel: "resend" | "shipmyform" | "none";
+  visitorDelivered: boolean;
+  channel: "gmail" | "resend" | "shipmyform" | "none";
+}
+
+interface DeliveryResult {
+  owner: boolean;
+  visitor: boolean;
+}
+
+interface EmailContent {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  badge: string;
+  rows: { label: string; value: string }[];
+  note: string;
+  footnote?: string;
 }
 
 const OWNER_EMAIL = process.env.LEGACY_OWNER_EMAIL?.trim() || "deayusts@gmail.com";
+const GMAIL_USER = process.env.GMAIL_USER?.trim() || OWNER_EMAIL;
+const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, "").trim() || "";
+const VISITOR_COOLDOWN_MS = 10 * 60 * 1000;
+const visitorNotifiedAt = new Map<string, number>();
+
+function isVisitorOnCooldown(email: string): boolean {
+  const key = email.toLowerCase();
+  const now = Date.now();
+  for (const [entry, sentAt] of visitorNotifiedAt) {
+    if (now - sentAt > VISITOR_COOLDOWN_MS) visitorNotifiedAt.delete(entry);
+  }
+  const last = visitorNotifiedAt.get(key);
+  return Boolean(last && now - last < VISITOR_COOLDOWN_MS);
+}
+
+function markVisitorNotified(email: string): void {
+  visitorNotifiedAt.set(email.toLowerCase(), Date.now());
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -68,7 +103,58 @@ function formatTime(date: Date): string {
   }).format(date);
 }
 
-function buildMessage(event: LoginEvent) {
+function renderEmail(content: EmailContent): string {
+  const footnote = content.footnote
+    ? `<p style="margin:18px 0 0;font-size:11px;line-height:1.6;color:#8695ba;word-break:break-word;">${escapeHtml(content.footnote)}</p>`
+    : "";
+
+  return `<!doctype html>
+<html lang="id">
+  <body style="margin:0;padding:0;background:#070a14;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#e9edfb;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#070a14;padding:28px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#101728;border:1px solid #263049;border-radius:18px;overflow:hidden;">
+            <tr>
+              <td style="padding:24px 26px;background:linear-gradient(135deg,#1b1d4d 0%,#241a47 55%,#0d3a48 100%);">
+                <p style="margin:0 0 8px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9fe8f7;font-weight:700;">${escapeHtml(content.eyebrow)}</p>
+                <h1 style="margin:0;font-size:22px;line-height:1.25;color:#ffffff;">${escapeHtml(content.title)}</h1>
+                <p style="margin:8px 0 0;font-size:13px;color:#c7d2f0;">${escapeHtml(content.intro)}</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 26px;">
+                <span style="display:inline-block;padding:5px 10px;border-radius:999px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.35);color:#6ee7b7;font-size:11px;font-weight:700;letter-spacing:1px;">${escapeHtml(content.badge)}</span>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:18px;border-collapse:collapse;">
+                  ${content.rows
+                    .map(
+                      (row) => `<tr>
+                    <td style="padding:10px 0;border-bottom:1px solid #202a41;font-size:12px;color:#93a0c2;width:42%;vertical-align:top;">${escapeHtml(row.label)}</td>
+                    <td style="padding:10px 0;border-bottom:1px solid #202a41;font-size:13px;color:#eef2ff;font-weight:600;vertical-align:top;">${escapeHtml(row.value)}</td>
+                  </tr>`,
+                    )
+                    .join("")}
+                </table>
+                ${footnote}
+                <div style="margin-top:22px;padding:14px 16px;border-radius:12px;background:#0b1220;border:1px solid #222d47;">
+                  <p style="margin:0;font-size:12px;line-height:1.65;color:#a9b6d8;">${escapeHtml(content.note)}</p>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:16px 26px;border-top:1px solid #202a41;background:#0b1220;">
+                <p style="margin:0;font-size:11px;color:#6f7ea3;">Email otomatis dari ${escapeHtml(site.name)} · ${escapeHtml(site.url)}</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+}
+
+function buildOwnerMessage(event: LoginEvent) {
   const occurredAt = event.occurredAt ?? new Date();
   const { device, browser } = describeClient(event.userAgent);
   const location = formatLocation(event);
@@ -76,7 +162,7 @@ function buildMessage(event: LoginEvent) {
   const ip = event.ip || "Tidak diketahui";
   const userAgent = event.userAgent || "Tidak diketahui";
 
-  const rows: { label: string; value: string }[] = [
+  const rows = [
     { label: "Email pengguna", value: event.email },
     { label: "Waktu", value: time },
     { label: "Perangkat", value: device },
@@ -101,84 +187,172 @@ function buildMessage(event: LoginEvent) {
     site.url,
   ].join("\n");
 
-  const html = `<!doctype html>
-<html lang="id">
-  <body style="margin:0;padding:0;background:#070a14;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#e9edfb;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#070a14;padding:28px 16px;">
-      <tr>
-        <td align="center">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#101728;border:1px solid #263049;border-radius:18px;overflow:hidden;">
-            <tr>
-              <td style="padding:24px 26px;background:linear-gradient(135deg,#1b1d4d 0%,#241a47 55%,#0d3a48 100%);">
-                <p style="margin:0 0 8px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9fe8f7;font-weight:700;">LEGACY AI · Portal Access</p>
-                <h1 style="margin:0;font-size:22px;line-height:1.25;color:#ffffff;">Pemberitahuan login baru</h1>
-                <p style="margin:8px 0 0;font-size:13px;color:#c7d2f0;">Sebuah sesi baru berhasil dibuka di portal direktori.</p>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:24px 26px;">
-                <span style="display:inline-block;padding:5px 10px;border-radius:999px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.35);color:#6ee7b7;font-size:11px;font-weight:700;letter-spacing:1px;">LOGIN BERHASIL</span>
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:18px;border-collapse:collapse;">
-                  ${rows
-                    .map(
-                      (row) => `<tr>
-                    <td style="padding:10px 0;border-bottom:1px solid #202a41;font-size:12px;color:#93a0c2;width:42%;vertical-align:top;">${escapeHtml(row.label)}</td>
-                    <td style="padding:10px 0;border-bottom:1px solid #202a41;font-size:13px;color:#eef2ff;font-weight:600;vertical-align:top;">${escapeHtml(row.value)}</td>
-                  </tr>`,
-                    )
-                    .join("")}
-                </table>
-                <p style="margin:18px 0 0;font-size:11px;line-height:1.6;color:#8695ba;word-break:break-word;">User agent: ${escapeHtml(userAgent)}</p>
-                <div style="margin-top:22px;padding:14px 16px;border-radius:12px;background:#0b1220;border:1px solid #222d47;">
-                  <p style="margin:0;font-size:12px;line-height:1.65;color:#a9b6d8;">Jika ini bukan kamu, segera ganti <strong style="color:#eef2ff;">LEGACY_ACCESS_CODE</strong> dan <strong style="color:#eef2ff;">AUTH_SECRET</strong> di pengaturan deployment. Kode akses tidak pernah disertakan dalam email ini.</p>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:16px 26px;border-top:1px solid #202a41;background:#0b1220;">
-                <p style="margin:0;font-size:11px;color:#6f7ea3;">Email otomatis dari ${escapeHtml(site.name)} · ${escapeHtml(site.url)}</p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>`;
+  const html = renderEmail({
+    eyebrow: "LEGACY AI · Portal Access",
+    title: "Pemberitahuan login baru",
+    intro: "Sebuah sesi baru berhasil dibuka di portal direktori.",
+    badge: "LOGIN BERHASIL",
+    rows,
+    footnote: `User agent: ${userAgent}`,
+    note: "Jika ini bukan kamu, segera ganti LEGACY_ACCESS_CODE dan AUTH_SECRET di pengaturan deployment. Kode akses tidak pernah disertakan dalam email ini.",
+  });
 
   return { text, html, time };
 }
 
-async function sendWithResend(event: LoginEvent, message: ReturnType<typeof buildMessage>) {
-  const apiKey = process.env.RESEND_API_KEY?.trim();
-  if (!apiKey) return false;
+function buildVisitorMessage(event: LoginEvent) {
+  const occurredAt = event.occurredAt ?? new Date();
+  const { device, browser } = describeClient(event.userAgent);
+  const time = `${formatTime(occurredAt)} WIB`;
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: process.env.RESEND_FROM?.trim() || "LEGACY AI <onboarding@resend.dev>",
-      to: [OWNER_EMAIL],
-      subject: `Pemberitahuan login LEGACY AI — ${message.time}`,
-      html: message.html,
-      text: message.text,
-      reply_to: event.email,
-    }),
-    signal: AbortSignal.timeout(8000),
+  const rows = [
+    { label: "Email", value: event.email },
+    { label: "Waktu", value: time },
+    { label: "Perangkat", value: device },
+    { label: "Browser", value: browser },
+  ];
+
+  const text = [
+    "KONFIRMASI LOGIN — LEGACY AI",
+    "",
+    "Login ke portal LEGACY AI berhasil.",
+    "",
+    ...rows.map((row) => `${row.label}: ${row.value}`),
+    "",
+    "Jika kamu tidak merasa melakukan login ini, hubungi pemilik portal.",
+    "Kode akses tidak pernah disertakan dalam email ini.",
+    site.url,
+  ].join("\n");
+
+  const html = renderEmail({
+    eyebrow: "LEGACY AI · Konfirmasi Login",
+    title: "Login berhasil ke LEGACY AI",
+    intro: "Email ini dikirim sebagai konfirmasi bahwa sesi baru dibuka dengan alamat ini.",
+    badge: "KONFIRMASI KEAMANAN",
+    rows,
+    note: "Jika kamu tidak merasa melakukan login ini, hubungi pemilik portal. Kode akses tidak pernah disertakan dalam email ini.",
   });
 
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    console.warn("[login-notify] Resend failed", response.status, detail.slice(0, 300));
-    return false;
-  }
-  return true;
+  return { text, html };
 }
 
-async function sendWithShipMyForm(event: LoginEvent, message: ReturnType<typeof buildMessage>) {
+async function sendWithGmail(
+  event: LoginEvent,
+  ownerMessage: ReturnType<typeof buildOwnerMessage>,
+  visitorMessage: ReturnType<typeof buildVisitorMessage>,
+): Promise<DeliveryResult> {
+  if (!GMAIL_APP_PASSWORD) return { owner: false, visitor: false };
+
+  const transporter = createTransport({
+    service: "gmail",
+    auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 15000,
+  });
+  const from = `"LEGACY AI" <${GMAIL_USER}>`;
+
+  try {
+    try {
+      await transporter.sendMail({
+        from,
+        to: OWNER_EMAIL,
+        replyTo: event.email,
+        subject: `Pemberitahuan login LEGACY AI — ${ownerMessage.time}`,
+        html: ownerMessage.html,
+        text: ownerMessage.text,
+      });
+    } catch (error) {
+      console.warn("[login-notify] Gmail owner send failed", error);
+      return { owner: false, visitor: false };
+    }
+
+    if (event.email.toLowerCase() === OWNER_EMAIL.toLowerCase()) {
+      return { owner: true, visitor: false };
+    }
+
+    if (isVisitorOnCooldown(event.email)) {
+      return { owner: true, visitor: false };
+    }
+
+    try {
+      await transporter.sendMail({
+        from,
+        to: event.email,
+        replyTo: GMAIL_USER,
+        subject: "Login berhasil ke LEGACY AI",
+        html: visitorMessage.html,
+        text: visitorMessage.text,
+      });
+      markVisitorNotified(event.email);
+      return { owner: true, visitor: true };
+    } catch (error) {
+      console.warn("[login-notify] Gmail visitor send failed", error);
+      return { owner: true, visitor: false };
+    }
+  } finally {
+    transporter.close();
+  }
+}
+
+async function sendWithResend(
+  event: LoginEvent,
+  ownerMessage: ReturnType<typeof buildOwnerMessage>,
+  visitorMessage: ReturnType<typeof buildVisitorMessage>,
+): Promise<DeliveryResult> {
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  if (!apiKey) return { owner: false, visitor: false };
+
+  const from = process.env.RESEND_FROM?.trim() || "LEGACY AI <onboarding@resend.dev>";
+
+  async function deliver(to: string, subject: string, message: { html: string; text: string }) {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: [to],
+        subject,
+        html: message.html,
+        text: message.text,
+        reply_to: event.email,
+      }),
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      console.warn("[login-notify] Resend failed", response.status, detail.slice(0, 300));
+      return false;
+    }
+    return true;
+  }
+
+  if (!(await deliver(OWNER_EMAIL, `Pemberitahuan login LEGACY AI — ${ownerMessage.time}`, ownerMessage))) {
+    return { owner: false, visitor: false };
+  }
+
+  if (event.email.toLowerCase() === OWNER_EMAIL.toLowerCase()) {
+    return { owner: true, visitor: false };
+  }
+
+  // Resend's shared onboarding sender can only reach the account owner.
+  if (/@resend\.dev/i.test(from) || isVisitorOnCooldown(event.email)) {
+    return { owner: true, visitor: false };
+  }
+
+  const visitorOk = await deliver(event.email, "Login berhasil ke LEGACY AI", visitorMessage);
+  if (visitorOk) markVisitorNotified(event.email);
+  return { owner: true, visitor: visitorOk };
+}
+
+async function sendWithShipMyForm(
+  event: LoginEvent,
+  message: ReturnType<typeof buildOwnerMessage>,
+): Promise<boolean> {
   const origin = site.url.replace(/\/$/, "");
   const client = describeClient(event.userAgent);
 
@@ -226,12 +400,25 @@ async function sendWithShipMyForm(event: LoginEvent, message: ReturnType<typeof 
 }
 
 export async function sendLoginNotification(event: LoginEvent): Promise<NotifyResult> {
-  const message = buildMessage(event);
+  const ownerMessage = buildOwnerMessage(event);
+  const visitorMessage = buildVisitorMessage(event);
+
+  if (GMAIL_APP_PASSWORD) {
+    try {
+      const result = await sendWithGmail(event, ownerMessage, visitorMessage);
+      if (result.owner) {
+        return { delivered: true, visitorDelivered: result.visitor, channel: "gmail" };
+      }
+    } catch (error) {
+      console.warn("[login-notify] Gmail error", error);
+    }
+  }
 
   if (process.env.RESEND_API_KEY?.trim()) {
     try {
-      if (await sendWithResend(event, message)) {
-        return { delivered: true, channel: "resend" };
+      const result = await sendWithResend(event, ownerMessage, visitorMessage);
+      if (result.owner) {
+        return { delivered: true, visitorDelivered: result.visitor, channel: "resend" };
       }
     } catch (error) {
       console.warn("[login-notify] Resend error", error);
@@ -239,12 +426,12 @@ export async function sendLoginNotification(event: LoginEvent): Promise<NotifyRe
   }
 
   try {
-    if (await sendWithShipMyForm(event, message)) {
-      return { delivered: true, channel: "shipmyform" };
+    if (await sendWithShipMyForm(event, ownerMessage)) {
+      return { delivered: true, visitorDelivered: false, channel: "shipmyform" };
     }
   } catch (error) {
     console.warn("[login-notify] ShipMyForm error", error);
   }
 
-  return { delivered: false, channel: "none" };
+  return { delivered: false, visitorDelivered: false, channel: "none" };
 }

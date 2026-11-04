@@ -28,8 +28,8 @@ const highlights = [
   },
   {
     icon: Mail,
-    title: "Notifikasi login ke pemilik",
-    text: "Waktu, perangkat, dan perkiraan lokasi dikirim otomatis lewat email.",
+    title: "Notifikasi login",
+    text: "Riwayat lengkap dikirim ke pemilik portal, dan konfirmasi dikirim ke email pengunjung.",
   },
 ];
 
@@ -41,6 +41,9 @@ export default async function LoginPage({
   const params = await searchParams;
   const rawNext = Array.isArray(params.next) ? params.next[0] : params.next;
   const nextPath = safeNextPath(rawNext);
+  const emailReady = Boolean(
+    process.env.GMAIL_APP_PASSWORD?.trim() || process.env.RESEND_API_KEY?.trim(),
+  );
 
   return (
     <main id="main" className="relative flex min-h-dvh flex-col overflow-hidden bg-canvas">
@@ -113,7 +116,7 @@ export default async function LoginPage({
               className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-iris/20 via-transparent to-aqua/15 blur-2xl"
               aria-hidden="true"
             />
-            <LoginForm nextPath={nextPath} />
+            <LoginForm nextPath={nextPath} emailReady={emailReady} />
           </div>
         </div>
       </div>
