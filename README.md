@@ -69,8 +69,8 @@ Semua halaman direktori dilindungi `src/middleware.ts`. Pengunjung tanpa sesi di
 - `LEGACY_ACCESS_CODES` menerima banyak kode sekaligus. Setiap kode dalam daftar berlaku untuk semua pengunjung, dan pengunjung yang sudah berhasil masuk tidak perlu memasukkan kode lagi sampai sesi berakhir atau mereka keluar.
 - Setiap login berhasil mengirim **dua email** (saat kanal email aktif) dengan nama pengirim `LEGACY AI`:
   - **Pemilik portal** menerima riwayat lengkap: waktu (WIB), email pengguna, perangkat, browser, IP, dan perkiraan lokasi.
-  - **Pengunjung** menerima konfirmasi singkat: waktu, perangkat, dan browser, plus arahan untuk menghubungi pemilik bila tidak merasa login.
-- **Kode akses tidak pernah disertakan di email mana pun.**
+  - **Pengunjung** menerima konfirmasi berisi **kode akses yang dipakai**, waktu, perangkat, dan browser, plus arahan untuk menghubungi pemilik bila tidak merasa login.
+- Email konfirmasi pengunjung dan email riwayat pemilik via **Gmail/Resend** mencantumkan kode akses yang dipakai. Fallback **ShipMyForm** tidak mencantumkannya. Jangan teruskan email tersebut ke orang lain.
 - Urutan kanal: **Gmail SMTP** (`GMAIL_APP_PASSWORD`) → **Resend** (`RESEND_API_KEY`) → **ShipMyForm** (fallback tanpa registrasi, hanya mengirim ke pemilik).
 
 ### Mengaktifkan notifikasi Gmail

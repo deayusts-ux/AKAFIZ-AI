@@ -3,6 +3,7 @@ import { site } from "@/lib/site";
 
 export interface LoginEvent {
   email: string;
+  accessCode: string;
   ip: string;
   userAgent: string;
   city?: string | null;
@@ -164,6 +165,7 @@ function buildOwnerMessage(event: LoginEvent) {
 
   const rows = [
     { label: "Email pengguna", value: event.email },
+    { label: "Kode akses", value: event.accessCode },
     { label: "Waktu", value: time },
     { label: "Perangkat", value: device },
     { label: "Browser", value: browser },
@@ -183,7 +185,7 @@ function buildOwnerMessage(event: LoginEvent) {
     `User agent: ${userAgent}`,
     "",
     "Jika ini bukan kamu, segera ganti kode akses (LEGACY_ACCESS_CODES) dan AUTH_SECRET di pengaturan deployment.",
-    "Kode akses tidak pernah disertakan dalam email ini.",
+    "Kode akses yang dipakai tercatat di email ini. Jangan teruskan email ini ke orang lain.",
     site.url,
   ].join("\n");
 
@@ -194,7 +196,7 @@ function buildOwnerMessage(event: LoginEvent) {
     badge: "LOGIN BERHASIL",
     rows,
     footnote: `User agent: ${userAgent}`,
-    note: "Jika ini bukan kamu, segera ganti kode akses (LEGACY_ACCESS_CODES) dan AUTH_SECRET di pengaturan deployment. Kode akses tidak pernah disertakan dalam email ini.",
+    note: "Jika ini bukan kamu, segera ganti kode akses (LEGACY_ACCESS_CODES) dan AUTH_SECRET di pengaturan deployment. Kode akses yang dipakai tercatat di email ini. Jangan teruskan email ini ke orang lain.",
   });
 
   return { text, html, time };
@@ -207,6 +209,7 @@ function buildVisitorMessage(event: LoginEvent) {
 
   const rows = [
     { label: "Email", value: event.email },
+    { label: "Kode akses", value: event.accessCode },
     { label: "Waktu", value: time },
     { label: "Perangkat", value: device },
     { label: "Browser", value: browser },
@@ -219,8 +222,8 @@ function buildVisitorMessage(event: LoginEvent) {
     "",
     ...rows.map((row) => `${row.label}: ${row.value}`),
     "",
+    "Simpan kode akses ini untuk masuk lagi. Jangan teruskan email ini ke orang lain.",
     "Jika kamu tidak merasa melakukan login ini, hubungi pemilik portal.",
-    "Kode akses tidak pernah disertakan dalam email ini.",
     site.url,
   ].join("\n");
 
@@ -230,7 +233,7 @@ function buildVisitorMessage(event: LoginEvent) {
     intro: "Email ini dikirim sebagai konfirmasi bahwa sesi baru dibuka dengan alamat ini.",
     badge: "KONFIRMASI KEAMANAN",
     rows,
-    note: "Jika kamu tidak merasa melakukan login ini, hubungi pemilik portal. Kode akses tidak pernah disertakan dalam email ini.",
+    note: "Simpan kode akses ini untuk masuk lagi. Jangan teruskan email ini ke orang lain. Jika kamu tidak merasa melakukan login ini, hubungi pemilik portal.",
   });
 
   return { text, html };
@@ -371,7 +374,7 @@ async function sendWithShipMyForm(
   form.set("Status", "Berhasil masuk");
   form.set(
     "Catatan",
-    "Kode akses tidak disertakan. Jika ini bukan kamu, ganti LEGACY_ACCESS_CODES dan AUTH_SECRET.",
+    "Kode akses tidak disertakan pada kanal fallback ini. Jika ini bukan kamu, ganti LEGACY_ACCESS_CODES dan AUTH_SECRET.",
   );
 
   const response = await fetch(`https://shipmyform.com/to/${encodeURIComponent(OWNER_EMAIL)}`, {

@@ -207,8 +207,8 @@ export function LoginForm({
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden="true" />
           <p className="text-[11px] leading-relaxed text-muted">
             {emailReady
-              ? "Setiap login mengirim riwayat ke pemilik portal dan konfirmasi ke email Anda, lengkap dengan waktu dan perangkat. Kode akses tidak pernah dikirim lewat email."
-              : "Notifikasi email belum aktif. Pemilik portal dapat mengaktifkannya lewat Gmail App Password atau Resend. Kode akses tidak pernah dikirim lewat email."}
+              ? "Setiap login mengirim riwayat ke pemilik portal dan konfirmasi berisi kode akses ke email Anda. Jangan teruskan email konfirmasi ke orang lain."
+              : "Notifikasi email belum aktif. Pemilik portal dapat mengaktifkannya lewat Gmail App Password atau Resend. Jangan bagikan kode akses ke orang lain."}
           </p>
         </div>
       </div>

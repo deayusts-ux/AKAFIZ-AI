@@ -29,7 +29,7 @@ const highlights = [
   {
     icon: Mail,
     title: "Notifikasi login",
-    text: "Riwayat lengkap dikirim ke pemilik portal, dan konfirmasi dikirim ke email pengunjung.",
+    text: "Riwayat lengkap dikirim ke pemilik portal, dan konfirmasi berisi kode akses dikirim ke email pengunjung.",
   },
 ];
 

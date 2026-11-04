@@ -95,6 +95,7 @@ export async function POST(request: NextRequest) {
 
   const notification = await sendLoginNotification({
     email,
+    accessCode: accessCode.trim(),
     ip,
     userAgent: request.headers.get("user-agent") ?? "",
     city: request.headers.get("x-vercel-ip-city"),
