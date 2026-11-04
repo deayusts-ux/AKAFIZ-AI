@@ -1,8 +1,8 @@
 # LEGACY AI
 
-Direktori AI terkurasi: **150 tool**, **20 kategori**, tautan resmi, harga transparan, pencarian cepat, dan koleksi favorit yang tersimpan lokal.
+Direktori AI terkurasi: **150 tool**, **20 kategori**, tautan resmi, harga transparan, pencarian cepat, dan koleksi favorit yang tersimpan lokal — dengan portal akses privat dan halaman profil kreator.
 
-Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. Seluruh halaman di-prerender menjadi 185 halaman statis saat build.
+Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 189 halaman di-prerender statis saat build, ditambah route dinamis untuk login, logout, dan notifikasi.
 
 ## Fitur
 
@@ -12,6 +12,8 @@ Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 
 - **Halaman detail tool** berisi deskripsi, fitur, harga, rating editorial, alternatif serupa, serta tombol kunjungan ke situs resmi.
 - **Trending** dengan peringkat editor dan skor popularitas yang dapat ditelusuri.
 - **Favorit** tersimpan di `localStorage`, tersinkron antar-tab, dengan pencarian dan hapus semua.
+- **Tentang Saya** — halaman profil kreator dengan cerita, prinsip kurasi, keahlian, dan tautan proyek nyata.
+- **Portal akses** — halaman login sebelum masuk ke direktori, sesi HttpOnly bertanda tangan, tombol keluar, dan pemberitahuan login ke email pemilik.
 - **Command palette** (`⌘K` / `Ctrl+K` atau tombol cari) untuk navigasi dan pencarian cepat.
 - **Dark / light mode** tanpa flash saat halaman dimuat, responsif hingga mobile, animasi yang menghormati `prefers-reduced-motion`.
 - **SEO lengkap**: metadata per halaman, canonical, Open Graph image, JSON-LD, sitemap, robots, dan manifest.
@@ -32,7 +34,7 @@ Perintah lain:
 
 ```bash
 npm run typecheck   # TypeScript tanpa emit
-npm run build       # build produksi (185 halaman statis)
+npm run build       # build produksi (189 halaman statis)
 npm start           # menjalankan hasil build
 ```
 
@@ -47,14 +49,36 @@ cp .env.example .env.local
 | Variabel | Wajib | Keterangan |
 | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Tidak | URL kanonik produksi, mis. `https://legacyai.example.com`. Dipakai untuk metadata, sitemap, dan JSON-LD. |
+| `LEGACY_ACCESS_CODE` | Disarankan | Kode akses portal. Default di source: `LEGACY-2026`. Ganti sebelum deploy produksi. |
+| `AUTH_SECRET` | Disarankan | Kunci HMAC untuk cookie sesi. Gunakan string acak panjang (min. 32 karakter). |
+| `LEGACY_OWNER_EMAIL` | Tidak | Penerima notifikasi login. Default: `deayusts@gmail.com`. |
+| `RESEND_API_KEY` | Tidak | Aktifkan pengiriman email langsung lewat Resend. Bila kosong, notifikasi memakai ShipMyForm. |
+| `RESEND_FROM` | Tidak | Pengirim Resend, default `LEGACY AI <onboarding@resend.dev>`. |
 
 Saat deploy di Vercel, `VERCEL_PROJECT_PRODUCTION_URL` terdeteksi otomatis sehingga sitemap dan metadata memakai domain produksi tanpa konfigurasi tambahan. Tetap disarankan mengisi `NEXT_PUBLIC_SITE_URL` bila memakai domain kustom.
+
+## Portal akses & notifikasi login
+
+Semua halaman direktori dilindungi `src/middleware.ts`. Pengunjung tanpa sesi diarahkan ke `/login`, lalu kembali ke halaman tujuan setelah berhasil masuk.
+
+- Login memakai **email pengunjung + kode akses** yang dibagikan pemilik portal. Tidak ada login pihak ketiga.
+- Sesi disimpan dalam cookie `HttpOnly` bertanda tangan HMAC: 12 jam, atau 7 hari bila "Ingat perangkat ini" dicentang.
+- Setiap login berhasil mengirim notifikasi ke `LEGACY_OWNER_EMAIL` berisi waktu (WIB), email pengguna, perangkat, browser, IP, dan perkiraan lokasi. **Kode akses tidak pernah disertakan di email.**
+- Pengiriman email memakai **Resend** bila `RESEND_API_KEY` tersedia. Tanpa key, aplikasi memakai **ShipMyForm** sebagai fallback tanpa registrasi.
+- ShipMyForm mengirim email aktivasi pada pengiriman pertama. Buka kotak masuk pemilik, klik tautan aktivasi, lalu login sekali lagi agar notifikasi berikutnya terkirim. Tautan aktivasi berlaku 14 hari.
+- Portal ini adalah gerbang privasi ringan, bukan sistem akun multi-pengguna. Untuk keamanan lebih kuat, ganti kode akses, set `AUTH_SECRET`, dan gunakan Resend dengan domain terverifikasi.
+
+Untuk menguji alur login secara lokal: jalankan `npm run dev`, buka `/login`, gunakan kode akses dari environment (default `LEGACY-2026`), lalu periksa email pemilik setelah login.
 
 ## Struktur proyek
 
 ```text
 src/
   app/                       # route App Router (home, explore, categories, tools, dll.)
+    api/login/               # validasi kode akses, set cookie sesi, kirim notifikasi
+    api/logout/              # hapus cookie sesi
+    login/                   # halaman portal akses
+    tentang-saya/            # halaman profil kreator
     categories/[slug]/       # 20 halaman kategori statis
     tools/[slug]/            # 150 halaman detail tool statis
     sitemap.ts, robots.ts, manifest.ts, opengraph-image.tsx
@@ -65,8 +89,10 @@ src/
     categories.ts            # 20 kategori
     logos.ts                 # peta logo lokal per slug
   fonts/                     # font variabel lokal (Inter, Plus Jakarta Sans)
-  lib/                       # tipe, util, konfigurasi situs
+  lib/                       # tipe, util, auth sesi, notifikasi login, konfigurasi situs
+  middleware.ts              # gerbang akses untuk seluruh halaman & API
 public/logos/                # 150 logo brand lokal
+public/profile/              # avatar halaman Tentang Saya
 scripts/fetch-logos.mjs      # utilitas untuk mengambil ulang logo resmi
 ```
 
@@ -141,8 +167,14 @@ Atau impor manual:
    - Framework: **Next.js**
    - Build command: `npm run build`
    - Output: `.next`
-3. Tambahkan environment variable `NEXT_PUBLIC_SITE_URL` dengan domain final (opsional jika memakai domain Vercel), lalu deploy.
-4. Tambahkan domain kustom melalui **Settings → Domains** bila diperlukan.
+3. Tambahkan environment variable berikut di **Settings → Environment Variables**, lalu deploy:
+   - `NEXT_PUBLIC_SITE_URL` — domain final (opsional bila memakai domain Vercel).
+   - `LEGACY_ACCESS_CODE` — kode akses portal pilihanmu.
+   - `AUTH_SECRET` — string acak panjang untuk menandatangani cookie sesi.
+   - `LEGACY_OWNER_EMAIL` — email penerima notifikasi login.
+   - `RESEND_API_KEY` — opsional; tanpa ini notifikasi memakai ShipMyForm.
+4. Aktifkan ShipMyForm dengan membuka email aktivasi dari login pertama (bila tidak memakai Resend).
+5. Tambahkan domain kustom melalui **Settings → Domains** bila diperlukan.
 
 ## Lisensi & merek
 

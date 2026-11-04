@@ -13,6 +13,7 @@ import {
   Info,
   LayoutGrid,
   Search,
+  UserRound,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -27,6 +28,7 @@ const quickLinks = [
   { href: "/categories", label: "Semua kategori", description: "20 kategori terkurasi", icon: LayoutGrid },
   { href: "/trending", label: "Trending", description: "Tool paling populer minggu ini", icon: Flame },
   { href: "/favorites", label: "Favorit", description: "Koleksi pribadimu", icon: Heart },
+  { href: "/tentang-saya", label: "Tentang saya", description: "Profil & cerita kreator", icon: UserRound },
   { href: "/about", label: "Tentang LEGACY AI", description: "Metodologi & kurasi", icon: Info },
 ];
 

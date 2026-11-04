@@ -13,6 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/categories`, lastModified, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/trending`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${base}/favorites`, lastModified, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${base}/tentang-saya`, lastModified, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/about`, lastModified, changeFrequency: "monthly", priority: 0.5 },
   ];
 

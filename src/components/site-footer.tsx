@@ -10,6 +10,7 @@ const directoryLinks = [
   { href: "/categories", label: "20 kategori AI" },
   { href: "/trending", label: "Trending minggu ini" },
   { href: "/favorites", label: "Koleksi favoritmu" },
+  { href: "/tentang-saya", label: "Tentang saya" },
   { href: "/about", label: "Tentang & metodologi" },
 ];
 

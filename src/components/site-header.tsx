@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { ArrowUpRight, Heart, Menu, Search, X } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { CommandTrigger } from "@/components/command-trigger";
+import { LogoutButton } from "@/components/logout-button";
 import { useFavorites } from "@/components/providers/favorites-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
@@ -16,7 +17,7 @@ const navLinks = [
   { href: "/categories", label: "Kategori" },
   { href: "/trending", label: "Trending" },
   { href: "/favorites", label: "Favorit" },
-  { href: "/about", label: "Tentang" },
+  { href: "/tentang-saya", label: "Tentang Saya" },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -50,7 +51,7 @@ export function SiteHeader() {
       <div className="container-page flex h-16 items-center justify-between gap-3">
         <Brand />
 
-        <nav aria-label="Navigasi utama" className="hidden items-center gap-0.5 lg:flex">
+        <nav aria-label="Navigasi utama" className="hidden items-center gap-0.5 xl:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -96,13 +97,15 @@ export function SiteHeader() {
             <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>
 
+          <LogoutButton className="hidden sm:inline-flex" />
+
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
             aria-label={menuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
-            className="icon-btn lg:hidden"
+            className="icon-btn xl:hidden"
           >
             {menuOpen ? <X className="h-[18px] w-[18px]" /> : <Menu className="h-[18px] w-[18px]" />}
           </button>
@@ -112,7 +115,7 @@ export function SiteHeader() {
         {menuOpen ? (
           <div
             id="mobile-menu"
-            className="absolute inset-x-0 top-full z-50 border-b border-line/10 bg-canvas shadow-[0_30px_60px_-30px_rgba(0,0,0,0.65)] lg:hidden"
+            className="absolute inset-x-0 top-full z-50 border-b border-line/10 bg-canvas shadow-[0_30px_60px_-30px_rgba(0,0,0,0.65)] xl:hidden"
           >
             <nav aria-label="Navigasi mobile" className="container-page grid grid-cols-2 gap-2 py-5">
               {navLinks.map((link) => (
@@ -144,6 +147,7 @@ export function SiteHeader() {
                 Jelajahi seluruh tool
                 <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
               </Link>
+              <LogoutButton variant="menu" className="mt-2" />
             </div>
           </div>
         ) : null}
@@ -153,7 +157,7 @@ export function SiteHeader() {
         <button
           type="button"
           aria-label="Tutup menu"
-          className="fixed inset-0 top-16 z-[45] cursor-default bg-canvas/70 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 top-16 z-[45] cursor-default bg-canvas/70 backdrop-blur-sm xl:hidden"
           onClick={() => setMenuOpen(false)}
         />
       ) : null}

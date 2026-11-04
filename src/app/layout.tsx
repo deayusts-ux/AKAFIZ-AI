@@ -2,12 +2,10 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import localFont from "next/font/local";
 import "./globals.css";
-import { CommandMenu } from "@/components/command-menu";
-import { MobileDock } from "@/components/mobile-dock";
 import { FavoritesProvider } from "@/components/providers/favorites-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import { SiteShell } from "@/components/site-shell";
 import { site } from "@/lib/site";
 
 const inter = localFont({
@@ -93,13 +91,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </a>
         <ToastProvider>
           <FavoritesProvider>
-            <SiteHeader />
-            <main id="main" className="flex-1">
-              {children}
-            </main>
-            <SiteFooter />
-            <MobileDock />
-            <CommandMenu />
+            <SiteShell footer={<SiteFooter />}>{children}</SiteShell>
           </FavoritesProvider>
         </ToastProvider>
       </body>
