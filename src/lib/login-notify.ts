@@ -1,4 +1,5 @@
 import { createTransport } from "nodemailer";
+import { EMAIL_CODE_VALID_DAYS } from "@/lib/auth";
 import { site } from "@/lib/site";
 
 export interface LoginEvent {
@@ -16,6 +17,16 @@ export interface NotifyResult {
   delivered: boolean;
   visitorDelivered: boolean;
   channel: "gmail" | "resend" | "shipmyform" | "none";
+}
+
+export interface AccessCodeRequest {
+  email: string;
+  code: string;
+}
+
+export interface AccessCodeDelivery {
+  delivered: boolean;
+  channel: "gmail" | "resend" | "none";
 }
 
 interface DeliveryResult {
@@ -38,6 +49,29 @@ const GMAIL_USER = process.env.GMAIL_USER?.trim() || OWNER_EMAIL;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, "").trim() || "";
 const VISITOR_COOLDOWN_MS = 10 * 60 * 1000;
 const visitorNotifiedAt = new Map<string, number>();
+
+function gmailTransport() {
+  return createTransport({
+    service: "gmail",
+    auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 15000,
+  });
+}
+
+function resendConfig(): { apiKey: string; from: string } | null {
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  if (!apiKey) return null;
+  const from = process.env.RESEND_FROM?.trim() || "LEGACY AI <onboarding@resend.dev>";
+  return { apiKey, from };
+}
+
+export function visitorEmailEnabled(): boolean {
+  if (GMAIL_APP_PASSWORD) return true;
+  const resend = resendConfig();
+  return Boolean(resend && !/@resend\.dev/i.test(resend.from));
+}
 
 function isVisitorOnCooldown(email: string): boolean {
   const key = email.toLowerCase();
@@ -246,13 +280,7 @@ async function sendWithGmail(
 ): Promise<DeliveryResult> {
   if (!GMAIL_APP_PASSWORD) return { owner: false, visitor: false };
 
-  const transporter = createTransport({
-    service: "gmail",
-    auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
-    connectionTimeout: 8000,
-    greetingTimeout: 8000,
-    socketTimeout: 15000,
-  });
+  const transporter = gmailTransport();
   const from = `"LEGACY AI" <${GMAIL_USER}>`;
 
   try {
@@ -437,4 +465,105 @@ export async function sendLoginNotification(event: LoginEvent): Promise<NotifyRe
   }
 
   return { delivered: false, visitorDelivered: false, channel: "none" };
+}
+
+function buildAccessCodeMessage(event: AccessCodeRequest) {
+  const requestedAt = `${formatTime(new Date())} WIB`;
+  const validUntil = new Date(Date.now() + (EMAIL_CODE_VALID_DAYS - 1) * 24 * 60 * 60 * 1000);
+  const validUntilText = new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "long",
+    timeZone: "Asia/Jakarta",
+  }).format(validUntil);
+
+  const rows = [
+    { label: "Email", value: event.email },
+    { label: "Kode akses", value: event.code },
+    { label: "Berlaku sampai", value: validUntilText },
+    { label: "Diminta pada", value: requestedAt },
+  ];
+
+  const text = [
+    "KODE AKSES — LEGACY AI",
+    "",
+    "Kode akses portal LEGACY AI untuk email ini:",
+    "",
+    `    ${event.code}`,
+    "",
+    `Kode hanya cocok untuk email ${event.email} dan berlaku ${EMAIL_CODE_VALID_DAYS} hari (sampai ${validUntilText}).`,
+    "Buka halaman login, masukkan email ini beserta kode di atas.",
+    "Jangan teruskan email ini ke orang lain.",
+    `${site.url}/login`,
+  ].join("\n");
+
+  const html = renderEmail({
+    eyebrow: "LEGACY AI · Kode Akses",
+    title: "Kode akses portalmu",
+    intro: "Gunakan kode ini bersama email yang kamu masukkan di halaman login.",
+    badge: "KODE AKSES",
+    rows,
+    note: `Kode hanya cocok untuk email ${event.email} dan berlaku ${EMAIL_CODE_VALID_DAYS} hari. Jangan teruskan email ini ke orang lain.`,
+  });
+
+  return { text, html };
+}
+
+export async function sendAccessCodeEmail(
+  event: AccessCodeRequest,
+): Promise<AccessCodeDelivery> {
+  const message = buildAccessCodeMessage(event);
+  const subject = "Kode akses LEGACY AI";
+
+  if (GMAIL_APP_PASSWORD) {
+    const transporter = gmailTransport();
+    try {
+      await transporter.sendMail({
+        from: `"LEGACY AI" <${GMAIL_USER}>`,
+        to: event.email,
+        replyTo: GMAIL_USER,
+        subject,
+        html: message.html,
+        text: message.text,
+      });
+      return { delivered: true, channel: "gmail" };
+    } catch (error) {
+      console.warn("[login-notify] Gmail access code send failed", error);
+    } finally {
+      transporter.close();
+    }
+  }
+
+  const resend = resendConfig();
+  if (resend && !/@resend\.dev/i.test(resend.from)) {
+    try {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resend.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: resend.from,
+          to: [event.email],
+          subject,
+          html: message.html,
+          text: message.text,
+          reply_to: GMAIL_USER,
+        }),
+        signal: AbortSignal.timeout(8000),
+      });
+
+      if (response.ok) return { delivered: true, channel: "resend" };
+
+      const detail = await response.text().catch(() => "");
+      console.warn(
+        "[login-notify] Resend access code failed",
+        response.status,
+        detail.slice(0, 300),
+      );
+    } catch (error) {
+      console.warn("[login-notify] Resend access code error", error);
+    }
+  }
+
+  return { delivered: false, channel: "none" };
 }

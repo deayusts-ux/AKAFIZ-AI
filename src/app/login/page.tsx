@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowUpRight, Compass, Link2, Mail, Sparkles } from "lucide-react";
+import { ArrowDown, Compass, Link2, Mail, Sparkles } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { stats } from "@/data/tools";
@@ -28,8 +27,8 @@ const highlights = [
   },
   {
     icon: Mail,
-    title: "Notifikasi login",
-    text: "Riwayat lengkap dikirim ke pemilik portal, dan konfirmasi berisi kode akses dikirim ke email pengunjung.",
+    title: "Kode lewat email",
+    text: "Tekan Minta kode untuk menerima kode akses pribadi di emailmu, lalu masuk dengan kode itu.",
   },
 ];
 
@@ -41,8 +40,10 @@ export default async function LoginPage({
   const params = await searchParams;
   const rawNext = Array.isArray(params.next) ? params.next[0] : params.next;
   const nextPath = safeNextPath(rawNext);
+  const resendFrom = process.env.RESEND_FROM?.trim() || "LEGACY AI <onboarding@resend.dev>";
   const emailReady = Boolean(
-    process.env.GMAIL_APP_PASSWORD?.trim() || process.env.RESEND_API_KEY?.trim(),
+    process.env.GMAIL_APP_PASSWORD?.trim() ||
+      (process.env.RESEND_API_KEY?.trim() && !/@resend\.dev/i.test(resendFrom)),
   );
 
   return (
@@ -58,13 +59,13 @@ export default async function LoginPage({
       <header className="container-page relative flex h-20 items-center justify-between gap-4">
         <Brand />
         <div className="flex items-center gap-2">
-          <Link
-            href="mailto:deayusts@gmail.com?subject=Permintaan%20akses%20LEGACY%20AI"
+          <a
+            href="#login-form"
             className="hidden h-10 items-center gap-1.5 rounded-full border border-line/10 bg-line/[0.035] px-4 text-xs font-semibold text-muted transition-colors hover:border-line/20 hover:text-ink sm:inline-flex"
           >
-            Minta akses
-            <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
+            Minta kode
+            <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+          </a>
           <ThemeToggle />
         </div>
       </header>

@@ -8,6 +8,12 @@ export const SESSION_REMEMBER_SECONDS = 60 * 60 * 24 * 365;
 const FALLBACK_SECRET = "legacy-ai-portal-dev-secret-change-me";
 const FALLBACK_ACCESS_CODE = "LEGACY-2026";
 
+export const EMAIL_CODE_PREFIX = "LEGACY-";
+export const EMAIL_CODE_VALID_DAYS = 7;
+
+const EMAIL_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 export interface SessionPayload {
   v: 1;
   sub: string;
@@ -73,7 +79,63 @@ async function expectedAccessHashes(): Promise<Uint8Array[]> {
   return hashes;
 }
 
-export async function verifyAccessCode(input: string): Promise<boolean> {
+async function hmac(value: string): Promise<Uint8Array> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(getSigningSecret()),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  return new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(value)));
+}
+
+function encodeBase32(bytes: Uint8Array): string {
+  let output = "";
+  let buffer = 0;
+  let bits = 0;
+  for (const byte of bytes) {
+    buffer = (buffer << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      output += EMAIL_CODE_ALPHABET[(buffer >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) output += EMAIL_CODE_ALPHABET[(buffer << (5 - bits)) & 31];
+  return output;
+}
+
+function currentDayIndex(): number {
+  return Math.floor(Date.now() / DAY_MS);
+}
+
+async function emailCodeForDay(email: string, day: number): Promise<string> {
+  const digest = await hmac(`access-code:${email.toLowerCase()}:${day}`);
+  return encodeBase32(digest.slice(0, 5));
+}
+
+export async function createEmailAccessCode(email: string): Promise<string> {
+  const raw = await emailCodeForDay(email, currentDayIndex());
+  return `${EMAIL_CODE_PREFIX}${raw.slice(0, 4)}-${raw.slice(4)}`;
+}
+
+async function verifyEmailAccessCode(input: string, email: string): Promise<boolean> {
+  const normalized = input.trim().toUpperCase();
+  if (!normalized.startsWith(EMAIL_CODE_PREFIX)) return false;
+  const raw = normalized.slice(EMAIL_CODE_PREFIX.length).replace(/[^A-Z0-9]/g, "");
+  if (raw.length !== 8) return false;
+
+  const today = currentDayIndex();
+  let matched = false;
+  for (let offset = 0; offset < EMAIL_CODE_VALID_DAYS; offset += 1) {
+    const expected = await emailCodeForDay(email, today - offset);
+    matched = constantTimeEqual(encoder.encode(raw), encoder.encode(expected)) || matched;
+  }
+  return matched;
+}
+
+export async function verifyAccessCode(input: string, email?: string): Promise<boolean> {
   const candidate = input.trim();
   if (!candidate) return false;
 
@@ -86,19 +148,13 @@ export async function verifyAccessCode(input: string): Promise<boolean> {
   for (const hash of expectedHashes) {
     matched = constantTimeEqual(candidateHash, hash) || matched;
   }
-  return matched;
+  if (matched) return true;
+
+  return email ? verifyEmailAccessCode(candidate, email) : false;
 }
 
 async function sign(value: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(getSigningSecret()),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
-  return toBase64Url(new Uint8Array(signature));
+  return toBase64Url(await hmac(value));
 }
 
 export async function createSessionToken(

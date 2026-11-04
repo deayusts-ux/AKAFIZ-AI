@@ -29,7 +29,48 @@ export function LoginForm({
   const [remember, setRemember] = useState(true);
   const [showCode, setShowCode] = useState(false);
   const [pending, setPending] = useState(false);
+  const [requesting, setRequesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function handleRequestCode() {
+    if (requesting) return;
+    const target = email.trim();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(target)) {
+      setError("Isi alamat email aktif di kolom Email, lalu tekan Minta kode.");
+      document.getElementById("login-email")?.focus();
+      return;
+    }
+
+    setError(null);
+    setRequesting(true);
+
+    try {
+      const response = await fetch("/api/access-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: target }),
+      });
+      const data = (await response.json().catch(() => null)) as
+        | { ok?: boolean; error?: string }
+        | null;
+
+      if (!response.ok || !data?.ok) {
+        setError(data?.error ?? "Kode belum bisa dikirim. Coba lagi sebentar.");
+        return;
+      }
+
+      toast(
+        "Kode dikirim",
+        `Cek ${target}, termasuk folder spam. Kode berlaku 7 hari dan hanya untuk email ini.`,
+      );
+      document.getElementById("login-code")?.focus();
+    } catch {
+      setError("Koneksi gagal. Periksa jaringan lalu coba lagi.");
+    } finally {
+      setRequesting(false);
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -77,7 +118,10 @@ export function LoginForm({
   }
 
   return (
-    <div className="glass-strong relative overflow-hidden rounded-3xl p-6 sm:p-8">
+    <div
+      id="login-form"
+      className="glass-strong relative scroll-mt-24 overflow-hidden rounded-3xl p-6 sm:p-8"
+    >
       <div
         className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-iris/25 blur-3xl"
         aria-hidden="true"
@@ -91,7 +135,7 @@ export function LoginForm({
           Masuk ke portal
         </h2>
         <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted">
-          Gunakan email aktif dan kode akses yang diberikan pemilik portal LEGACY AI.
+          Masukkan email aktif, tekan Minta kode, lalu gunakan kode yang dikirim ke email tersebut.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
@@ -124,12 +168,21 @@ export function LoginForm({
               <label htmlFor="login-code" className="block text-xs font-semibold text-ink">
                 Kode akses
               </label>
-              <a
-                href="mailto:deayusts@gmail.com?subject=Permintaan%20kode%20akses%20LEGACY%20AI"
-                className="text-[11px] font-semibold text-aqua transition-colors hover:text-ink"
+              <button
+                type="button"
+                onClick={handleRequestCode}
+                disabled={requesting}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-aqua transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Minta kode
-              </a>
+                {requesting ? (
+                  <>
+                    <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                    Mengirim kode…
+                  </>
+                ) : (
+                  "Minta kode"
+                )}
+              </button>
             </div>
             <div className="relative">
               <KeyRound
@@ -207,8 +260,8 @@ export function LoginForm({
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden="true" />
           <p className="text-[11px] leading-relaxed text-muted">
             {emailReady
-              ? "Setiap login mengirim riwayat ke pemilik portal dan konfirmasi berisi kode akses ke email Anda. Jangan teruskan email konfirmasi ke orang lain."
-              : "Notifikasi email belum aktif. Pemilik portal dapat mengaktifkannya lewat Gmail App Password atau Resend. Jangan bagikan kode akses ke orang lain."}
+              ? "Minta kode mengirim kode akses ke email yang kamu isi (berlaku 7 hari, hanya untuk email itu). Setiap login juga memberi tahu pemilik portal."
+              : "Email otomatis belum aktif. Pemilik portal perlu mengisi Gmail App Password atau Resend dengan domain terverifikasi agar kode bisa dikirim."}
           </p>
         </div>
       </div>

@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (typeof accessCode !== "string" || !(await verifyAccessCode(accessCode))) {
+  if (typeof accessCode !== "string" || !(await verifyAccessCode(accessCode, email))) {
     registerFailure(ip);
     return NextResponse.json(
       { error: "Kode akses tidak cocok. Periksa kembali atau hubungi pemilik portal." },
