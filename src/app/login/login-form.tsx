@@ -30,6 +30,8 @@ export function LoginForm({
   const [showCode, setShowCode] = useState(false);
   const [pending, setPending] = useState(false);
   const [requesting, setRequesting] = useState(false);
+  const [issuedCode, setIssuedCode] = useState<string | null>(null);
+  const [codeEmailed, setCodeEmailed] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleRequestCode() {
@@ -52,17 +54,23 @@ export function LoginForm({
         body: JSON.stringify({ email: target }),
       });
       const data = (await response.json().catch(() => null)) as
-        | { ok?: boolean; error?: string }
+        | { ok?: boolean; error?: string; code?: string; emailed?: boolean }
         | null;
 
-      if (!response.ok || !data?.ok) {
-        setError(data?.error ?? "Kode belum bisa dikirim. Coba lagi sebentar.");
+      if (!response.ok || !data?.ok || !data.code) {
+        setError(data?.error ?? "Kode belum bisa dibuat. Coba lagi sebentar.");
         return;
       }
 
+      setAccessCode(data.code);
+      setIssuedCode(data.code);
+      setCodeEmailed(Boolean(data.emailed));
+      setShowCode(true);
       toast(
-        "Kode dikirim",
-        `Cek ${target}, termasuk folder spam. Kode berlaku 7 hari dan hanya untuk email ini.`,
+        data.emailed ? "Kode siap dan terkirim" : "Kode siap dipakai",
+        data.emailed
+          ? `Kode sudah terisi otomatis dan salinannya dikirim ke ${target}. Berlaku 7 hari.`
+          : "Kode sudah terisi otomatis. Salinan email tidak terkirim, jadi simpan kode ini. Berlaku 7 hari.",
       );
       document.getElementById("login-code")?.focus();
     } catch {
@@ -135,7 +143,7 @@ export function LoginForm({
           Masuk ke portal
         </h2>
         <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted">
-          Masukkan email aktif, tekan Minta kode, lalu gunakan kode yang dikirim ke email tersebut.
+          Masukkan email aktif, tekan Minta kode, dan kode langsung muncul di halaman ini.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
@@ -156,7 +164,14 @@ export function LoginForm({
                 autoComplete="email"
                 required
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  if (issuedCode) {
+                    setIssuedCode(null);
+                    setCodeEmailed(false);
+                    setAccessCode("");
+                  }
+                }}
                 placeholder="nama@email.com"
                 className="h-12 w-full rounded-xl border border-line/10 bg-canvas/45 pl-10 pr-3 text-sm text-ink outline-none transition-colors placeholder:text-muted/65 hover:border-line/20 focus:border-iris/60 focus:bg-canvas/60"
               />
@@ -216,6 +231,25 @@ export function LoginForm({
             </div>
           </div>
 
+          {issuedCode ? (
+            <div
+              role="status"
+              className="rounded-xl border border-aqua/25 bg-aqua/[0.07] px-3.5 py-3"
+            >
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-aqua">
+                Kode aksesmu
+              </p>
+              <p className="mt-1 font-mono text-base font-bold tracking-[0.08em] text-ink">
+                {issuedCode}
+              </p>
+              <p className="mt-1 text-[11px] leading-relaxed text-muted">
+                {codeEmailed
+                  ? "Sudah terisi otomatis dan salinannya dikirim ke emailmu. Berlaku 7 hari."
+                  : "Sudah terisi otomatis. Salinan email tidak terkirim, jadi simpan kode ini. Berlaku 7 hari."}
+              </p>
+            </div>
+          ) : null}
+
           <label className="flex cursor-pointer items-start gap-2.5 text-[12px] leading-relaxed text-muted">
             <input
               type="checkbox"
@@ -260,8 +294,8 @@ export function LoginForm({
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden="true" />
           <p className="text-[11px] leading-relaxed text-muted">
             {emailReady
-              ? "Minta kode mengirim kode akses ke email yang kamu isi (berlaku 7 hari, hanya untuk email itu). Setiap login juga memberi tahu pemilik portal."
-              : "Email otomatis belum aktif. Pemilik portal perlu mengisi Gmail App Password atau Resend dengan domain terverifikasi agar kode bisa dikirim."}
+              ? "Minta kode langsung menampilkan kode di halaman ini dan mengirim salinannya ke emailmu. Kode berlaku 7 hari."
+              : "Minta kode langsung menampilkan kode di halaman ini. Salinan email belum aktif, jadi simpan kodenya baik-baik."}
           </p>
         </div>
       </div>

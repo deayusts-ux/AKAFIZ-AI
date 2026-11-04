@@ -67,12 +67,6 @@ function resendConfig(): { apiKey: string; from: string } | null {
   return { apiKey, from };
 }
 
-export function visitorEmailEnabled(): boolean {
-  if (GMAIL_APP_PASSWORD) return true;
-  const resend = resendConfig();
-  return Boolean(resend && !/@resend\.dev/i.test(resend.from));
-}
-
 function isVisitorOnCooldown(email: string): boolean {
   const key = email.toLowerCase();
   const now = Date.now();

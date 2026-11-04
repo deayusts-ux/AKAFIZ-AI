@@ -27,8 +27,8 @@ const highlights = [
   },
   {
     icon: Mail,
-    title: "Kode lewat email",
-    text: "Tekan Minta kode untuk menerima kode akses pribadi di emailmu, lalu masuk dengan kode itu.",
+    title: "Kode langsung tampil",
+    text: "Tekan Minta kode — kode langsung muncul dan terisi di formulir, tanpa perlu membuka Gmail.",
   },
 ];
 

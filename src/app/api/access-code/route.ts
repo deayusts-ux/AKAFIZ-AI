@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createEmailAccessCode, normalizeEmail } from "@/lib/auth";
-import { sendAccessCodeEmail, visitorEmailEnabled } from "@/lib/login-notify";
+import { sendAccessCodeEmail } from "@/lib/login-notify";
 
 export const runtime = "nodejs";
 
@@ -81,41 +81,20 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!visitorEmailEnabled()) {
-    return NextResponse.json(
-      {
-        error:
-          "Email otomatis belum aktif. Pemilik portal perlu mengisi Gmail App Password atau Resend dengan domain terverifikasi.",
-      },
-      { status: 503, headers: { "Cache-Control": "no-store" } },
-    );
-  }
-
-  if (isEmailOnCooldown(email)) {
-    return NextResponse.json(
-      {
-        error:
-          "Kode sudah dikirim ke email ini beberapa menit lalu. Cek inbox dan folder spam sebelum meminta lagi.",
-      },
-      { status: 429, headers: { "Cache-Control": "no-store" } },
-    );
-  }
-
   const code = await createEmailAccessCode(email);
-  const delivery = await sendAccessCodeEmail({ email, code });
+  let emailed = false;
 
-  if (!delivery.delivered) {
-    return NextResponse.json(
-      { error: "Email gagal dikirim. Coba lagi sebentar atau hubungi pemilik portal." },
-      { status: 502, headers: { "Cache-Control": "no-store" } },
-    );
+  // The code is shown on the login page, so delivery failures are not fatal.
+  if (!isEmailOnCooldown(email)) {
+    const delivery = await sendAccessCodeEmail({ email, code });
+    emailed = delivery.delivered;
+    if (emailed) lastSentAt.set(email, Date.now());
   }
 
-  lastSentAt.set(email, Date.now());
   registerRequest(ip);
 
   return NextResponse.json(
-    { ok: true, channel: delivery.channel },
+    { ok: true, code, emailed },
     { headers: { "Cache-Control": "no-store" } },
   );
 }

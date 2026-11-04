@@ -13,7 +13,7 @@ Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 
 - **Trending** dengan peringkat editor dan skor popularitas yang dapat ditelusuri.
 - **Favorit** tersimpan di `localStorage`, tersinkron antar-tab, dengan pencarian dan hapus semua.
 - **Tentang Saya** — halaman profil kreator dengan cerita, prinsip kurasi, keahlian, dan tautan proyek nyata.
-- **Portal akses** — halaman login sebelum masuk ke direktori, tombol **Minta kode** yang mengirim kode akses pribadi ke email pengunjung, sesi HttpOnly bertanda tangan, tombol keluar, serta email login untuk pemilik dan pengunjung.
+- **Portal akses** — halaman login sebelum masuk ke direktori, tombol **Minta kode** yang langsung menampilkan kode akses pribadi di formulir, sesi HttpOnly bertanda tangan, tombol keluar, serta email login untuk pemilik dan pengunjung.
 - **Command palette** (`⌘K` / `Ctrl+K` atau tombol cari) untuk navigasi dan pencarian cepat.
 - **Dark / light mode** tanpa flash saat halaman dimuat, responsif hingga mobile, animasi yang menghormati `prefers-reduced-motion`.
 - **SEO lengkap**: metadata per halaman, canonical, Open Graph image, JSON-LD, sitemap, robots, dan manifest.
@@ -65,8 +65,10 @@ Saat deploy di Vercel, `VERCEL_PROJECT_PRODUCTION_URL` terdeteksi otomatis sehin
 Semua halaman direktori dilindungi `src/middleware.ts`. Pengunjung tanpa sesi diarahkan ke `/login`, lalu kembali ke halaman tujuan setelah berhasil masuk.
 
 - Login memakai **email pengunjung + kode akses**. Kode bisa berasal dari daftar `LEGACY_ACCESS_CODES`, atau diminta sendiri lewat tombol **Minta kode**. Tidak ada login pihak ketiga.
-- **Minta kode** mengirim kode unik ke alamat email yang diisi pengunjung. Kode terikat pada email tersebut, berlaku **7 hari**, dan dibuat dari `AUTH_SECRET` — bukan salah satu kode permanen, sehingga daftar kode utama tidak ikut terekspos. Tombol ini butuh kanal email aktif (Gmail App Password atau Resend dengan domain terverifikasi).
-- Permintaan kode dibatasi 4 kali per 15 menit per IP dan sekali per 5 menit per email.
+- **Minta kode** membuat kode unik yang **langsung ditampilkan dan diisikan otomatis** di formulir, jadi pengunjung tidak perlu membuka Gmail. Kode terikat pada email yang diisi, berlaku **7 hari**, dan dibuat dari `AUTH_SECRET` — bukan salah satu kode permanen, sehingga daftar kode utama tidak ikut terekspos.
+- Bila Gmail/Resend aktif, salinan kode juga dikirim ke email tersebut (maksimal sekali per 5 menit). Kegagalan email tidak menghalangi login karena kode sudah tampil di halaman.
+- Permintaan kode dibatasi 4 kali per 15 menit per IP.
+- Karena kode tampil langsung, portal ini adalah gerbang privasi ringan, bukan pembatas akses yang kuat.
 - Sesi disimpan dalam cookie `HttpOnly` bertanda tangan HMAC: 12 jam, atau **1 tahun** bila "Tetap masuk di perangkat ini" dicentang (aktif secara default).
 - `LEGACY_ACCESS_CODES` menerima banyak kode sekaligus. Setiap kode dalam daftar berlaku untuk semua pengunjung, dan pengunjung yang sudah berhasil masuk tidak perlu memasukkan kode lagi sampai sesi berakhir atau mereka keluar.
 - Setiap login berhasil mengirim **dua email** (saat kanal email aktif) dengan nama pengirim `LEGACY AI`:
@@ -97,7 +99,7 @@ Fallback **ShipMyForm** mengirim email aktivasi pada pengiriman pertama. Buka ko
 
 Portal ini adalah gerbang privasi ringan, bukan sistem akun multi-pengguna. Untuk keamanan lebih kuat, ganti kode akses, set `AUTH_SECRET`, dan gunakan App Password khusus yang bisa dicabut kapan saja.
 
-Untuk menguji alur login secara lokal: jalankan `npm run dev`, buka `/login`, isi email aktif, tekan **Minta kode**, lalu periksa inbox email tersebut (juga folder spam). Kode hasil permintaan hanya berlaku 7 hari dan hanya untuk email itu. Kode permanen dari `LEGACY_ACCESS_CODES` (atau `LEGACY-2026` bila daftar kosong) tetap bisa dipakai langsung.
+Untuk menguji alur login secara lokal: jalankan `npm run dev`, buka `/login`, isi email aktif, lalu tekan **Minta kode**. Kode langsung muncul, terisi otomatis, dan bisa dipakai saat itu juga — tidak perlu membuka email. Kode permanen dari `LEGACY_ACCESS_CODES` (atau `LEGACY-2026` bila daftar kosong) tetap bisa dipakai langsung.
 
 ## Struktur proyek
 
