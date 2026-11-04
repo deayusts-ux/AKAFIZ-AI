@@ -62,7 +62,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: `${category.name} — AI FINDER`,
+    name: `${category.name} — LEGACY AI`,
     description: category.description,
     url: `${site.url}/categories/${category.slug}`,
     isPartOf: { "@type": "WebSite", name: site.name, url: site.url },

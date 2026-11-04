@@ -9,7 +9,7 @@ import { formatNumber } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Explore AI — Cari & filter 150 tool",
   description:
-    "Jelajahi seluruh direktori AI FINDER. Cari berdasarkan nama atau fungsi, filter kategori dan harga (gratis, freemium, berbayar), lalu urutkan sesuai kebutuhanmu.",
+    "Jelajahi seluruh direktori LEGACY AI. Cari berdasarkan nama atau fungsi, filter kategori dan harga (gratis, freemium, berbayar), lalu urutkan sesuai kebutuhanmu.",
   alternates: { canonical: "/explore" },
   openGraph: {
     title: "Explore AI — Cari & filter 150 tool",

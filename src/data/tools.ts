@@ -1,7 +1,7 @@
 import type { Tool } from "@/lib/types";
 
 /**
- * AI FINDER — curated catalog.
+ * LEGACY AI — curated catalog.
  *
  * Every entry links directly to the official product website.
  * Prices are editorial starting points and can change; always confirm on the

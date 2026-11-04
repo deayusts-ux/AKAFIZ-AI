@@ -514,7 +514,7 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
             <div className="rounded-2xl border border-line/[0.07] bg-line/[0.02] p-4">
               <p className="flex items-start gap-1.5 text-[11px] leading-relaxed text-muted">
                 <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400" aria-hidden="true" />
-                AI FINDER tidak menerima pembayaran untuk penempatan. Tautan mengarah langsung ke
+                LEGACY AI tidak menerima pembayaran untuk penempatan. Tautan mengarah langsung ke
                 situs resmi {tool.name}.
               </p>
             </div>

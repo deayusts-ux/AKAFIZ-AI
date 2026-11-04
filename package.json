@@ -1,8 +1,8 @@
 {
-  "name": "ai-finder",
+  "name": "legacy-ai",
   "version": "1.0.0",
   "private": true,
-  "description": "AI FINDER — a curated directory of the world's best AI tools.",
+  "description": "LEGACY AI — a curated directory of the world's best AI tools.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Trending AI — 20 tool paling populer",
     description:
-      "Tool AI yang sedang paling banyak dipakai minggu ini, dikurasi editorial oleh AI FINDER.",
+      "Tool AI yang sedang paling banyak dipakai minggu ini, dikurasi editorial oleh LEGACY AI.",
     url: "/trending",
   },
 };
@@ -57,7 +57,7 @@ export default function TrendingPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Trending AI — AI FINDER",
+    name: "Trending AI — LEGACY AI",
     description: "20 tool AI paling populer minggu ini.",
     url: `${site.url}/trending`,
     mainEntity: {

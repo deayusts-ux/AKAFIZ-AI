@@ -27,7 +27,7 @@ const quickLinks = [
   { href: "/categories", label: "Semua kategori", description: "20 kategori terkurasi", icon: LayoutGrid },
   { href: "/trending", label: "Trending", description: "Tool paling populer minggu ini", icon: Flame },
   { href: "/favorites", label: "Favorit", description: "Koleksi pribadimu", icon: Heart },
-  { href: "/about", label: "Tentang AI FINDER", description: "Metodologi & kurasi", icon: Info },
+  { href: "/about", label: "Tentang LEGACY AI", description: "Metodologi & kurasi", icon: Info },
 ];
 
 type Entry =
@@ -93,10 +93,10 @@ export function CommandMenu() {
         openMenu();
       }
     };
-    window.addEventListener("aifinder:open-command", onOpen);
+    window.addEventListener("legacy-ai:open-command", onOpen);
     window.addEventListener("keydown", onKey);
     return () => {
-      window.removeEventListener("aifinder:open-command", onOpen);
+      window.removeEventListener("legacy-ai:open-command", onOpen);
       window.removeEventListener("keydown", onKey);
     };
   }, [openMenu]);
@@ -186,7 +186,7 @@ export function CommandMenu() {
         className="glass-strong relative flex max-h-[78vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl animate-fade-up"
       >
         <h2 id="command-title" className="sr-only">
-          Pencarian cepat AI FINDER
+          Pencarian cepat LEGACY AI
         </h2>
 
         <div className="flex items-center gap-2.5 border-b border-line/[0.08] px-4 py-3">

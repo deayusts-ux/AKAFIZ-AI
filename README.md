@@ -1,4 +1,4 @@
-# AI FINDER
+# LEGACY AI
 
 Direktori AI terkurasi: **150 tool**, **20 kategori**, tautan resmi, harga transparan, pencarian cepat, dan koleksi favorit yang tersimpan lokal.
 
@@ -46,7 +46,7 @@ cp .env.example .env.local
 
 | Variabel | Wajib | Keterangan |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | Tidak | URL kanonik produksi, mis. `https://aifinder.example.com`. Dipakai untuk metadata, sitemap, dan JSON-LD. |
+| `NEXT_PUBLIC_SITE_URL` | Tidak | URL kanonik produksi, mis. `https://legacyai.example.com`. Dipakai untuk metadata, sitemap, dan JSON-LD. |
 
 Saat deploy di Vercel, `VERCEL_PROJECT_PRODUCTION_URL` terdeteksi otomatis sehingga sitemap dan metadata memakai domain produksi tanpa konfigurasi tambahan. Tetap disarankan mengisi `NEXT_PUBLIC_SITE_URL` bila memakai domain kustom.
 
@@ -113,7 +113,7 @@ Catatan: `scripts/fetch-logos.mjs` mengambil ulang **semua** logo dan menulis ul
 
 - Katalog diperbarui November 2026.
 - Harga adalah titik mulai editorial dan dapat berubah; halaman detail selalu mengarahkan pengguna untuk mengonfirmasi di situs resmi.
-- Rating adalah penilaian editorial AI FINDER, bukan ulasan pengguna atau jumlah ulasan palsu.
+- Rating adalah penilaian editorial LEGACY AI, bukan ulasan pengguna atau jumlah ulasan palsu.
 - PlayHT resmi ditutup setelah akuisisi dan berhenti beroperasi pada akhir 2025. Entri tersebut diganti dengan **Resemble AI**, tool suara real-time yang masih aktif, agar tidak ada tautan mati.
 
 ## Deploy ke GitHub + Vercel
@@ -131,7 +131,7 @@ Atau impor manual:
    ```bash
    git init
    git add .
-   git commit -m "feat: AI FINDER directory"
+   git commit -m "feat: LEGACY AI directory"
    git branch -M main
    git remote add origin https://github.com/<username>/<repo>.git
    git push -u origin main

@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
-const STORAGE_KEY = "aifinder:favorites:v1";
+const STORAGE_KEY = "legacy-ai:favorites:v1";
 
 interface FavoritesContextValue {
   favorites: string[];

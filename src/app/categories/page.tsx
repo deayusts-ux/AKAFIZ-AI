@@ -29,7 +29,7 @@ export default function CategoriesPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Kategori AI — AI FINDER",
+    name: "Kategori AI — LEGACY AI",
     description: "20 kategori tool AI terkurasi.",
     url: `${site.url}/categories`,
     hasPart: categories.map((category) => ({

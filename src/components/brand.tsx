@@ -32,7 +32,7 @@ export function Brand({
   return (
     <Link
       href="/"
-      aria-label="AI FINDER — beranda"
+      aria-label="LEGACY AI — beranda"
       className={cn(
         "group inline-flex items-center gap-2.5 rounded-xl outline-offset-4",
         className,
@@ -42,7 +42,7 @@ export function Brand({
       {!compact ? (
         <span className="flex flex-col leading-none">
           <span className="font-display text-[17px] font-extrabold tracking-[-0.02em] text-ink">
-            AI <span className="text-gradient">FINDER</span>
+            LEGACY <span className="text-gradient">AI</span>
           </span>
           <span className="mt-1 hidden text-[9px] font-semibold uppercase tracking-[0.22em] text-muted sm:block">
             Direktori AI Terkurasi

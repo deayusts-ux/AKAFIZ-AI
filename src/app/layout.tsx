@@ -76,7 +76,7 @@ export const viewport: Viewport = {
   colorScheme: "dark light",
 };
 
-const themeScript = `(function(){try{var t=localStorage.getItem("aifinder:theme");if(t==="light"){document.documentElement.classList.add("light")}}catch(e){}})();`;
+const themeScript = `(function(){try{var t=localStorage.getItem("legacy-ai:theme");if(t==="light"){document.documentElement.classList.add("light")}}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

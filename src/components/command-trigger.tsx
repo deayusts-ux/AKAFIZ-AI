@@ -16,7 +16,7 @@ export function CommandTrigger({
     <button
       type="button"
       aria-label={label}
-      onClick={() => window.dispatchEvent(new CustomEvent("aifinder:open-command"))}
+      onClick={() => window.dispatchEvent(new CustomEvent("legacy-ai:open-command"))}
       className={cn(className)}
     >
       {children}

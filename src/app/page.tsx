@@ -257,7 +257,7 @@ export default function HomePage() {
 
         <Reveal as="section">
           <SectionHeading
-            label="Kenapa AI FINDER"
+            label="Kenapa LEGACY AI"
             title="Kurasi yang bisa kamu percaya"
             description="Kami tidak menampilkan semua tool yang ada — hanya yang layak masuk ke alur kerjamu."
             align="center"

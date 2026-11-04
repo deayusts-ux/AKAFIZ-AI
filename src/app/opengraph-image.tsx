@@ -38,10 +38,10 @@ export default function OpengraphImage() {
               fontWeight: 800,
             }}
           >
-            AI
+            LA
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.5 }}>AI FINDER</span>
+            <span style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.5 }}>LEGACY AI</span>
             <span style={{ fontSize: 14, color: "#97a1c1", letterSpacing: 4, textTransform: "uppercase" }}>
               Direktori AI Terkurasi
             </span>

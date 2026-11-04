@@ -113,7 +113,7 @@ export function SiteFooter() {
 
         <div className="mt-12 flex flex-col gap-4 border-t border-line/[0.07] pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted">
-            © 2026 AI FINDER. Harga dan fitur dapat berubah — selalu verifikasi di situs resmi
+            © 2026 LEGACY AI. Harga dan fitur dapat berubah — selalu verifikasi di situs resmi
             masing-masing tool.
           </p>
           <ScrollTopButton />

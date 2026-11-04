@@ -23,12 +23,12 @@ import { site } from "@/lib/site";
 import { formatNumber } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Tentang AI FINDER — metodologi & kurasi",
+  title: "Tentang LEGACY AI — metodologi & kurasi",
   description:
-    "AI FINDER adalah direktori AI independen: 150 tool, 20 kategori, tautan resmi terverifikasi, harga transparan, dan favorit lokal tanpa akun. Pelajari metodologi kurasi kami.",
+    "LEGACY AI adalah direktori AI independen: 150 tool, 20 kategori, tautan resmi terverifikasi, harga transparan, dan favorit lokal tanpa akun. Pelajari metodologi kurasi kami.",
   alternates: { canonical: "/about" },
   openGraph: {
-    title: "Tentang AI FINDER — metodologi & kurasi",
+    title: "Tentang LEGACY AI — metodologi & kurasi",
     description:
       "Bagaimana kami memilih tool AI, memverifikasi tautan resmi, dan menyusun peringkat editorial.",
     url: "/about",
@@ -72,7 +72,7 @@ const criteria = [
 
 const faqs = [
   {
-    question: "Apakah semua tool di AI FINDER gratis?",
+    question: "Apakah semua tool di LEGACY AI gratis?",
     answer:
       "Tidak. Setiap tool diberi label Gratis, Freemium, atau Berbayar. Saat ini sekitar " +
       stats.free +
@@ -81,7 +81,7 @@ const faqs = [
       " tool memiliki versi gratis atau freemium yang bisa dicoba sebelum berlangganan.",
   },
   {
-    question: "Apakah AI FINDER memakai link afiliasi?",
+    question: "Apakah LEGACY AI memakai link afiliasi?",
     answer:
       "Tidak. Semua tombol kunjungan mengarah langsung ke situs resmi tool. Kami tidak menempatkan link afiliasi tersembunyi dan tidak menerima bayaran untuk peringkat.",
   },
@@ -111,7 +111,7 @@ export default function AboutPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "AboutPage",
-    name: "Tentang AI FINDER",
+    name: "Tentang LEGACY AI",
     url: `${site.url}/about`,
     description: site.description,
     isPartOf: { "@type": "WebSite", name: site.name, url: site.url },
@@ -166,7 +166,7 @@ export default function AboutPage() {
               daftar tanpa akhir.
             </h1>
             <p className="mt-5 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-              AI FINDER membantu kreator, developer, dan tim bisnis menemukan tool yang tepat
+              LEGACY AI membantu kreator, developer, dan tim bisnis menemukan tool yang tepat
               tanpa membuka puluhan tab. Setiap tool dikurasi berdasarkan kegunaan nyata, dengan
               tautan resmi dan harga yang transparan.
             </p>
