@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { IdeaCard } from "@/components/idea/idea-card";
-import { IdeaMonogram } from "@/components/idea/idea-monogram";
+import { Monogram } from "@/components/monogram";
 import { getIdeaCategory } from "@/data/idea-categories";
 import { getIdea, ideas, primaryIdeaCategory, relatedIdeas } from "@/data/ideas";
 import {
@@ -92,7 +92,7 @@ export default async function IdeaSourcePage({ params }: { params: Promise<{ slu
       <header className="card-surface mt-6 p-5 sm:p-7">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex items-start gap-4">
-            <IdeaMonogram
+            <Monogram
               name={idea.name}
               accent={category.accent}
               accentAlt={category.accentAlt}

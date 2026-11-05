@@ -14,6 +14,7 @@ import {
   Info,
   LayoutGrid,
   Lightbulb,
+  PenLine,
   Search,
   UserRound,
   X,
@@ -28,6 +29,7 @@ import { cn } from "@/lib/utils";
 const quickLinks = [
   { href: "/explore", label: "Explore semua AI", description: "Cari & filter 150 tool", icon: Compass },
   { href: "/explore-idea", label: "Explore Idea", description: "58 sumber referensi di 14 bidang", icon: Lightbulb },
+  { href: "/ai-humanizer", label: "Panduan AI Humanizer", description: "10 alat perapikan tulisan", icon: PenLine },
   { href: "/crypto", label: "Crypto Academy", description: "E-book, Candle Lab & kuis", icon: GraduationCap },
   { href: "/categories", label: "Semua kategori", description: "20 kategori terkurasi", icon: LayoutGrid },
   { href: "/trending", label: "Trending", description: "Tool paling populer minggu ini", icon: Flame },

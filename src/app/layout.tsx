@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import localFont from "next/font/local";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { FavoritesProvider } from "@/components/providers/favorites-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
@@ -94,6 +95,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <SiteShell footer={<SiteFooter />}>{children}</SiteShell>
           </FavoritesProvider>
         </ToastProvider>
+        <Analytics />
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { IdeaMonogram } from "@/components/idea/idea-monogram";
+import { Monogram } from "@/components/monogram";
 import { ideaCategoryBySlug } from "@/data/idea-categories";
 import { IDEA_KIND_LABEL, type IdeaCategory, type IdeaSource } from "@/lib/idea-types";
 import { accentStyle, cn, contrastInk } from "@/lib/utils";
@@ -27,7 +27,7 @@ export function IdeaCard({
       />
 
       <div className="flex items-start gap-3">
-        <IdeaMonogram name={idea.name} accent={category.accent} accentAlt={category.accentAlt} />
+        <Monogram name={idea.name} accent={category.accent} accentAlt={category.accentAlt} />
         <div className="min-w-0 flex-1 pt-0.5">
           <h3 className="line-clamp-2 font-display text-[17px] font-bold leading-tight tracking-[-0.02em] text-ink">
             {typeof rank === "number" ? (

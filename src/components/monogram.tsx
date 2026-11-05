@@ -16,7 +16,7 @@ function monogram(name: string): string {
   return `${words[0][0]}${words[1][0]}`.toUpperCase();
 }
 
-export function IdeaMonogram({
+export function Monogram({
   name,
   accent,
   accentAlt,

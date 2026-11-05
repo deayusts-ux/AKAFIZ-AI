@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { IdeaMonogram } from "@/components/idea/idea-monogram";
+import { Monogram } from "@/components/monogram";
 import { ideaCategoryBySlug } from "@/data/idea-categories";
 import { IDEA_KIND_LABEL, type IdeaCategory, type IdeaSource } from "@/lib/idea-types";
 import { cn, contrastInk } from "@/lib/utils";
@@ -22,7 +22,7 @@ export function IdeaRow({
         <span className="w-5 shrink-0 pt-3 text-right font-display text-[11px] font-bold tabular-nums text-muted/70">
           {typeof rank === "number" ? rank : ""}
         </span>
-        <IdeaMonogram
+        <Monogram
           name={idea.name}
           accent={category.accent}
           accentAlt={category.accentAlt}

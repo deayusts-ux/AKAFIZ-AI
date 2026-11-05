@@ -1,14 +1,15 @@
 # LEGACY AI
 
-Direktori AI terkurasi: **150 tool**, **20 kategori**, tautan resmi, harga transparan, pencarian cepat, dan koleksi favorit yang tersimpan lokal — ditambah **Explore Idea** (58 sumber referensi di 14 bidang), **Crypto Academy**, e-book interaktif 10 bab tentang fundamental crypto dan candlestick, lengkap dengan portal akses privat dan halaman profil kreator.
+Direktori AI terkurasi: **150 tool**, **20 kategori**, tautan resmi, harga transparan, pencarian cepat, dan koleksi favorit yang tersimpan lokal — ditambah **Explore Idea** (58 sumber referensi di 14 bidang), **panduan AI Humanizer**, **Crypto Academy**, e-book interaktif 10 bab tentang fundamental crypto dan candlestick, lengkap dengan portal akses privat dan halaman profil kreator.
 
-Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 293 halaman di-prerender statis saat build, ditambah route dinamis untuk login, logout, permintaan kode, dan notifikasi.
+Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 294 halaman di-prerender statis saat build, ditambah route dinamis untuk login, logout, permintaan kode, dan notifikasi.
 
 ## Fitur
 
 - **Beranda** dengan hero, pencarian, kategori populer, spotlight editor, dan daftar tool yang sedang trending.
 - **Explore AI** dengan pencarian nama/fungsi/kategori, filter kategori dan harga (Gratis, Freemium, Berbayar), urutan, tampilan grid/list, serta URL yang selalu sinkron dengan filter.
 - **Explore Idea** — direktori 58 sumber referensi di 14 bidang (arsitektur, akuntansi, informatika, sipil, hukum, kesehatan, bisnis, desain, psikologi, pertanian, elektro, pendidikan, komunikasi, sains) dengan pencarian, filter kategori dan jenis, urutan, tampilan grid/list, serta halaman detail per sumber (detail di bawah).
+- **AI Humanizer** — panduan 10 alat penulisan ulang dan penyuntingan dengan tautan resmi, tiga rekomendasi untuk tugas kuliah, langkah penggunaan yang sehat, dan catatan tegas bahwa tidak ada alat yang menjamin lolos AI detector (detail di bawah).
 - **Kategori** — 20 halaman kategori dengan daftar tool, statistik, filter, dan rekomendasi kategori terkait.
 - **Halaman detail tool** berisi deskripsi, fitur, harga, rating editorial, alternatif serupa, serta tombol kunjungan ke situs resmi.
 - **Trending** dengan peringkat editor dan skor popularitas yang dapat ditelusuri.
@@ -17,6 +18,7 @@ Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 
 - **Crypto Academy** — e-book interaktif 10 bab, Candlestick Lab, simulasi baca candle, 100 soal kuis, glosarium A–Z, dasbor progres, dan game demo Bitcoin (detail di bawah).
 - **Portal akses** — halaman login sebelum masuk ke direktori, tombol **Minta kode** yang langsung menampilkan kode akses pribadi di formulir, sesi HttpOnly bertanda tangan, tombol keluar, serta email login untuk pemilik dan pengunjung.
 - **Command palette** (`⌘K` / `Ctrl+K` atau tombol cari) untuk navigasi dan pencarian cepat.
+- **Vercel Analytics** — komponen `@vercel/analytics` terpasang di layout; data kunjungan tampil di dashboard Vercel setelah deploy.
 - **Dark / light mode** tanpa flash saat halaman dimuat, responsif hingga mobile, animasi yang menghormati `prefers-reduced-motion`.
 - **SEO lengkap**: metadata per halaman, canonical, Open Graph image, JSON-LD, sitemap, robots, dan manifest.
 - **Tanpa fake link**: setiap tombol kunjungan mengarah ke domain resmi produk dan dibuka di tab baru.
@@ -53,6 +55,29 @@ Direktori sumber ide dan referensi untuk 14 bidang studi dan profesi. Setiap sum
 
 LEGACY AI tidak berafiliasi dengan sumber-sumber tersebut. Materi dan lisensi setiap sumber mengikuti ketentuan penyedianya; halaman detail selalu mengingatkan untuk memeriksanya.
 
+## AI Humanizer
+
+Halaman `/ai-humanizer` merangkum 10 alat untuk menulis ulang, merapikan, dan menyunting tulisan. Semua tombol membuka situs resmi masing-masing alat.
+
+| Alat | Keunggulan |
+| --- | --- |
+| QuillBot | Parafrase dan memperbaiki alur tulisan |
+| Grammarly | Memperbaiki gaya bahasa dan tata bahasa |
+| Phrasly AI | Menyusun ulang kalimat |
+| Undetectable AI | Penulisan ulang teks |
+| HIX AI | Membantu penulisan dan parafrase |
+| WriteHuman | Mengubah gaya penulisan |
+| StealthWriter | Alternatif penulisan ulang |
+| Smodin | Parafrase berbagai jenis teks |
+| Wordtune | Membuat kalimat lebih mengalir |
+| Ryne AI | Membantu proses penulisan akademik |
+
+**Rekomendasi untuk tugas kuliah**
+1. **QuillBot** — untuk memperbaiki susunan kalimat.
+2. **Grammarly** — untuk memperbaiki tata bahasa.
+3. **Wordtune** — untuk membuat tulisan lebih mengalir.
+
+**Catatan penting:** tidak ada AI Humanizer yang bisa menjamin tulisan lolos AI Detector atau Turnitin. Gunakan alat ini untuk memperbaiki keterbacaan, mempertahankan makna, dan memastikan tulisan sesuai pemahaman sendiri; aturan integritas akademik tetap berlaku. Daftar disusun berdasarkan fitur dan perbandingan alat, bukan peringkat hasil pengujian independen.
 
 ## Crypto Academy
 
@@ -97,7 +122,7 @@ Perintah lain:
 
 ```bash
 npm run typecheck   # TypeScript tanpa emit
-npm run build       # build produksi (293 halaman statis)
+npm run build       # build produksi (294 halaman statis)
 npm start           # menjalankan hasil build
 ```
 
@@ -176,19 +201,22 @@ src/
     tentang-saya/            # halaman profil kreator
     crypto/                  # Crypto Academy (e-book, lab, simulasi, kuis, glosarium, progres, game, tentang)
     explore-idea/            # Explore Idea: direktori, peta bidang, kategori, detail sumber
+    ai-humanizer/            # panduan 10 alat penulisan ulang & penyuntingan
     categories/[slug]/       # 20 halaman kategori statis
     tools/[slug]/            # 150 halaman detail tool statis
     sitemap.ts, robots.ts, manifest.ts, opengraph-image.tsx
   components/                # komponen UI reusable (cards, header, filters, command menu, dll.)
     crypto/                  # chart SVG, reader tools, kuis, simulasi, glosarium, game, progres
-    idea/                    # kartu, baris, monogram, dan panel filter Explore Idea
+    idea/                    # kartu, baris, dan panel filter Explore Idea
     providers/               # favorites + toast context
+    monogram.tsx             # monogram inisial berwarna untuk kartu sumber/alat
   data/
     tools.ts                 # katalog utama 150 tool
     categories.ts            # 20 kategori
     logos.ts                 # peta logo lokal per slug
     ideas.ts                 # 58 sumber referensi Explore Idea
     idea-categories.ts       # 14 bidang Explore Idea
+    humanizer-tools.ts       # 10 alat AI Humanizer + rekomendasi
     crypto/                  # 10 bab, 11 pola, 100 soal, 8 simulasi, 59 istilah
   lib/
     crypto/market.ts         # generator candle simulasi, timeframe, agregasi, formatter
@@ -247,6 +275,7 @@ Catatan: `scripts/fetch-logos.mjs` mengambil ulang **semua** logo dan menulis ul
 - Rating adalah penilaian editorial LEGACY AI, bukan ulasan pengguna atau jumlah ulasan palsu.
 - PlayHT resmi ditutup setelah akuisisi dan berhenti beroperasi pada akhir 2025. Entri tersebut diganti dengan **Resemble AI**, tool suara real-time yang masih aktif, agar tidak ada tautan mati.
 - Sumber Explore Idea adalah situs resmi lembaga, penerbit, atau komunitas terkait. Tidak ada peringkat, jumlah pengguna, atau klaim afiliasi yang dibuat-buat; deskripsi ditulis sebagai ringkasan editorial. Beberapa sumber sengaja muncul di lebih dari satu bidang (mis. Behance, Khan Academy, Google Scholar) dan dihitung sekali dalam total 58 sumber.
+- Daftar AI Humanizer disusun dari fitur dan perbandingan umum, bukan pengujian independen. Tidak ada klaim bahwa tulisan dijamin lolos AI detector atau Turnitin; halaman menekankan penggunaan untuk keterbacaan dan integritas akademik.
 
 ## Deploy ke GitHub + Vercel
 
@@ -281,6 +310,7 @@ Atau impor manual:
    - `RESEND_API_KEY` — opsional; tanpa ini notifikasi memakai ShipMyForm.
 4. Aktifkan ShipMyForm dengan membuka email aktivasi dari login pertama (bila tidak memakai Resend).
 5. Tambahkan domain kustom melalui **Settings → Domains** bila diperlukan.
+6. Setelah deploy, buka tab **Analytics** di project Vercel. Komponen `<Analytics />` dari `@vercel/analytics` sudah terpasang, jadi kunjungan halaman langsung tercatat tanpa environment variable tambahan.
 
 ## Lisensi & merek
 

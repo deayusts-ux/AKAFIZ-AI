@@ -3,8 +3,11 @@ import Link from "next/link";
 import {
   ArrowRight,
   BadgeCheck,
+  GraduationCap,
   Heart,
+  Lightbulb,
   ListChecks,
+  PenLine,
   ScanSearch,
   Sparkles,
   TrendingUp,
@@ -28,7 +31,7 @@ import {
   trendingTools,
 } from "@/data/tools";
 import { site } from "@/lib/site";
-import { formatNumber } from "@/lib/utils";
+import { accentStyle, contrastInk, formatNumber } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: { absolute: `${site.name} — ${site.tagline}` },
@@ -53,6 +56,39 @@ const steps = [
     title: "Disimpan olehmu",
     description:
       "Simpan tool favorit ke koleksi pribadi tanpa akun. Favorit tersimpan aman di browser dan siap diakses kapan saja.",
+  },
+];
+
+const guides = [
+  {
+    href: "/ai-humanizer",
+    label: "Panduan tulisan",
+    title: "10 alat untuk merapikan tulisan",
+    description:
+      "Parafrase, tata bahasa, dan penyuntingan — lengkap dengan rekomendasi tugas kuliah serta catatan etika akademik.",
+    icon: PenLine,
+    accent: "#f472b6",
+    accentAlt: "#a855f7",
+  },
+  {
+    href: "/explore-idea",
+    label: "Referensi",
+    title: "58 sumber referensi di 14 bidang",
+    description:
+      "Dari arsitektur dan hukum sampai sains dan pertanian. Semua tautan menuju situs resmi masing-masing sumber.",
+    icon: Lightbulb,
+    accent: "#22d3ee",
+    accentAlt: "#6366f1",
+  },
+  {
+    href: "/crypto",
+    label: "Akademi",
+    title: "Belajar crypto dari nol",
+    description:
+      "E-book interaktif 10 bab, Candlestick Lab, 100 soal kuis, dan simulasi dengan data yang diberi label jelas.",
+    icon: GraduationCap,
+    accent: "#34d399",
+    accentAlt: "#14b8a6",
   },
 ];
 
@@ -251,6 +287,56 @@ export default function HomePage() {
               const category = getCategory(tool.category);
               if (!category) return null;
               return <ToolCard key={tool.slug} tool={tool} category={category} />;
+            })}
+          </div>
+        </Reveal>
+
+        <Reveal as="section">
+          <SectionHeading
+            label="Lebih dari direktori"
+            title="Panduan untuk menulis, meneliti, dan belajar"
+            description="Konten pendamping yang bisa langsung dipakai — bukan sekadar kumpulan tautan."
+          />
+          <div className="mt-7 grid gap-4 md:grid-cols-3">
+            {guides.map((guide) => {
+              const Icon = guide.icon;
+              return (
+                <Link
+                  key={guide.href}
+                  href={guide.href}
+                  className="card-surface group relative flex h-full flex-col overflow-hidden p-5 transition-colors hover:border-line/20"
+                  style={accentStyle(guide.accent)}
+                >
+                  <span
+                    className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[var(--accent)]/70 to-transparent"
+                    aria-hidden="true"
+                  />
+                  <span
+                    className="flex h-10 w-10 items-center justify-center rounded-xl"
+                    style={{
+                      color: contrastInk(guide.accent),
+                      backgroundImage: `linear-gradient(135deg, ${guide.accent}, ${guide.accentAlt})`,
+                      boxShadow: `0 12px 26px -18px ${guide.accent}`,
+                    }}
+                  >
+                    <Icon className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
+                    {guide.label}
+                  </p>
+                  <h3 className="mt-1.5 font-display text-base font-bold leading-snug text-ink">
+                    {guide.title}
+                  </h3>
+                  <p className="mt-2 text-[13px] leading-relaxed text-muted">{guide.description}</p>
+                  <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-muted transition-colors group-hover:text-ink">
+                    Buka panduan
+                    <ArrowRight
+                      className="h-3 w-3 transition-transform group-hover:translate-x-0.5"
+                      aria-hidden="true"
+                    />
+                  </span>
+                </Link>
+              );
             })}
           </div>
         </Reveal>
