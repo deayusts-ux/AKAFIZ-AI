@@ -102,11 +102,16 @@ Fitur pendukung: analisis kata/kalimat/paragraf, perkiraan keterbacaan dari panj
 - **YouTube** — menempel tautan video; judul diambil lewat oEmbed dan thumbnail resmi ditampilkan; pemutar memakai embed `youtube-nocookie`.
 
 **AI dengan rantai cadangan**
-- Generator pelajaran mencoba AI eksternal bila kunci API tersedia: **Gemini** (`gemini-2.0-flash`, lalu `gemini-1.5-flash`) → **OpenRouter** (`meta-llama/llama-3.3-70b-instruct:free`) → **mesin pelajaran lokal** yang deterministik. Bila kuota satu penyedia habis, penyedia berikutnya dipakai otomatis; penyedia yang menghasilkan teks selalu dicantumkan di catatan.
+- Jawaban model AI memakai **kunci API gratis milik pengguna**: **Gemini** (`gemini-3.8-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`) → **OpenRouter** (model gratis `google/gemma-4-31b-it:free`, `google/gemma-4-26b-a4b-it:free`, `nvidia/nemotron-3-ultra-550b-a55b:free`) → **mesin lokal** yang deterministik. Bila satu penyedia gagal, penyedia berikutnya dicoba otomatis, penyedia yang menghasilkan teks selalu dicantumkan, dan alasan kegagalan ditampilkan. Tombol **Tes koneksi** menguji kunci sebelum disimpan.
+- Catatan jujur 2026: layanan AI yang bisa dipanggil browser tanpa kunci sudah tidak tersedia lagi (Pollinations kini menuntut Turnstile/API key, Puter tidak dapat diverifikasi berjalan), jadi jalur gratisnya adalah kunci API gratis dari AI Studio Google atau OpenRouter.
 - Kunci API diisi sendiri oleh pengguna di pengaturan halaman dan tersimpan **hanya di `localStorage` perangkatnya**, dipanggil langsung dari browser ke API penyedia. "Memakai akun sendiri" diimplementasikan lewat kunci API ini — login Google popup sesungguhnya memerlukan OAuth Client ID dari Google Cloud, yang tidak dimiliki proyek ini.
 
-**Pustaka catatan**
-- Jenis catatan: Teks, Slide (pelajaran terstruktur), Dokumen, Audio, YouTube — dengan filter, pencarian, tampilan galeri/daftar, dan folder buatan pengguna.
+**Perintah materi (alur seperti GPT)**
+- Setiap materi yang tersimpan — dokumen unggah, rekaman, hasil generate, atau tautan video — otomatis dibuka kembali dengan bilah perintah. Ketik perintah bebas atau pakai pintasan **Ringkas materinya**, **Buat soal pilihan ganda**, **Buat glosarium istilah**.
+- Perintah dijalankan lewat rantai AI yang sama; tanpa kunci, mesin lokal memprosesnya: ringkasan ekstraktif (skor frekuensi kata kunci per kalimat), soal pilihan ganda + benar/salah + isian dari pola definisi (`… adalah/yaitu/merupakan …`) dengan kunci jawaban, dan glosarium dari istilah-istilah tersebut. Hasil disimpan sebagai catatan anak (`parentId`) yang muncul di thread materi asalnya, bisa disalin atau dihapus.
+- Video YouTube dan berkas tanpa teks (gambar/PDF/audio) tidak punya isi tekstual untuk diolah, jadi modal menyediakan kolom tempel transkrip/uraian lebih dulu; ini dinyatakan jujur di antarmuka, bukan berpura-pura bisa membaca video.
+
+**Pustaka catatan**- Jenis catatan: Teks, Slide (pelajaran terstruktur), Dokumen, Audio, YouTube — dengan filter, pencarian, tampilan galeri/daftar, dan folder buatan pengguna.
 - Catatan pelajaran bisa dibuka dalam **mode slide** (navigasi per bagian `##`) atau **mode baca**, dipindah antar-folder, diubah kembali jadi pelajaran, diunduh, atau dihapus.
 - Catatan audio/video tersimpan sebagai blob di IndexedDB; stiker streak dan level dihitung dari tanggal dan jumlah catatan.
 

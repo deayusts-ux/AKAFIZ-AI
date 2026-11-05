@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ArrowUp,
+  Copy,
   File,
   FileText,
   Flame,
@@ -26,7 +27,8 @@ import {
   X,
 } from "lucide-react";
 import { useToast } from "@/components/providers/toast-provider";
-import { generateLesson, type AiKeys } from "@/lib/belajar/ai";
+import { generateLesson, runAiChain, testAiKeys, type AiKeys, type KeyTestResults } from "@/lib/belajar/ai";
+import { buildCommandPrompt, interpretCommand, runLocalCommand } from "@/lib/belajar/commands";
 import { deleteNote, listNotes, loadBlob, saveNote } from "@/lib/belajar/db";
 import {
   createId,
@@ -106,16 +108,46 @@ function splitSlides(text: string): Array<{ title: string; body: string }> {
   return slides.length > 0 ? slides : [{ title: "Materi", body: text }];
 }
 
+function renderInline(text: string, keyBase: number): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  const pattern = /(\*\*[^*]+\*\*|`[^`]+`|_[^_]+_|(?<![\w*])\*[^*\n]+\*(?![\w*]))/g;
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+  let index = 0;
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > cursor) nodes.push(text.slice(cursor, match.index));
+    const token = match[0];
+    const key = `${keyBase}-${index++}`;
+    if (token.startsWith("**")) {
+      nodes.push(<strong key={key} className="font-bold text-ink">{token.slice(2, -2)}</strong>);
+    } else if (token.startsWith("`")) {
+      nodes.push(<code key={key} className="rounded bg-cell px-1 py-0.5 font-mono text-[0.85em] text-aqua">{token.slice(1, -1)}</code>);
+    } else {
+      nodes.push(<em key={key}>{token.replace(/^[_*]|[_*]$/g, "")}</em>);
+    }
+    cursor = match.index + token.length;
+  }
+  if (cursor < text.length) nodes.push(text.slice(cursor));
+  return nodes;
+}
+
 function MarkdownBlocks({ text }: { text: string }) {
   const lines = text.split("\n");
   const blocks: ReactNode[] = [];
-  let list: string[] = [];
+  let list: Array<{ text: string; num: number | null }> = [];
   let ordered = false;
   let key = 0;
 
   const flush = () => {
     if (list.length === 0) return;
-    const items = list.map((item) => <li key={key++}>{item}</li>);
+    const items = list.map((item) => {
+      const base = key++;
+      return (
+        <li key={base} value={item.num ?? undefined}>
+          {renderInline(item.text, base)}
+        </li>
+      );
+    });
     blocks.push(
       ordered ? (
         <ol key={key++} className="list-decimal space-y-1.5 pl-5 text-sm leading-relaxed text-muted">{items}</ol>
@@ -147,18 +179,19 @@ function MarkdownBlocks({ text }: { text: string }) {
         flush();
         ordered = false;
       }
-      list.push(line.replace(/^-\s+/, ""));
+      list.push({ text: line.replace(/^-\s+/, ""), num: null });
     } else if (/^\d+\.\s+/.test(line)) {
       if (!ordered && list.length > 0) flush();
       ordered = true;
-      list.push(line.replace(/^\d+\.\s+/, ""));
+      list.push({ text: line.replace(/^\d+\.\s+/, ""), num: Number(line.match(/^(\d+)\./)?.[1]) });
     } else if (line.trim() === "") {
       flush();
     } else {
       flush();
+      const base = key++;
       blocks.push(
-        <p key={key++} className="text-sm leading-relaxed text-muted">
-          {line}
+        <p key={base} className="text-sm leading-relaxed text-muted">
+          {renderInline(line, base)}
         </p>,
       );
     }
@@ -195,7 +228,10 @@ function StreakChips({ notes }: { notes: BelajarNote[] }) {
 }
 
 export function BelajarStudio() {
-  const { toast } = useToast();
+  const { toast: pushToast } = useToast();
+  const toast = useCallback((title: string, tone: "success" | "error" = "success") => {
+    pushToast(title, undefined, tone === "error" ? "danger" : "default");
+  }, [pushToast]);
   const [notes, setNotes] = useState<BelajarNote[]>([]);
   const [folders, setFolders] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
@@ -215,6 +251,11 @@ export function BelajarStudio() {
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [keyDraft, setKeyDraft] = useState<AiKeys>({ gemini: "", openrouter: "" });
+  const [keyTest, setKeyTest] = useState<KeyTestResults | null>(null);
+  const [testingKeys, setTestingKeys] = useState(false);
+
+  const [commandInput, setCommandInput] = useState("");
+  const [textDraft, setTextDraft] = useState("");
 
   const [recording, setRecording] = useState(false);
   const [recordSeconds, setRecordSeconds] = useState(0);
@@ -301,6 +342,13 @@ export function BelajarStudio() {
       await persistNote(note);
       setPrompt("");
       toast(`Pelajaran dibuat dengan ${result.provider}.`, "success");
+      await openModal(note);
+      if (result.local && result.failures.length > 0) {
+        toast(
+          `AI eksternal gagal: ${result.failures[0].slice(0, 110)}. Coba lagi beberapa saat atau tambahkan kunci cadangan.`,
+          "error",
+        );
+      }
     } catch (error) {
       toast(error instanceof Error ? error.message : "Gagal membuat pelajaran.", "error");
     } finally {
@@ -405,7 +453,8 @@ export function BelajarStudio() {
         provider: null,
       };
       await persistNote(note);
-      toast("Dokumen teks tersimpan.", "success");
+      toast("Dokumen tersimpan — siap diperintah (ringkas, soal, glosarium).", "success");
+      await openModal(note);
       return;
     }
     const isAudio = file.type.startsWith("audio/");
@@ -426,7 +475,8 @@ export function BelajarStudio() {
       provider: null,
     };
     await persistNote(note, file);
-    toast(isAudio || isVideo ? "Media audio tersimpan." : isImage ? "Gambar tersimpan." : "Berkas tersimpan.", "success");
+    toast(isAudio || isVideo ? "Media tersimpan — siap diperintah." : isImage ? "Gambar tersimpan — siap diperintah." : "Berkas tersimpan — siap diperintah.", "success");
+    await openModal(note);
   };
 
   const handleYoutube = async () => {
@@ -462,7 +512,8 @@ export function BelajarStudio() {
     await persistNote(note);
     setYoutubeUrl("");
     setYoutubeOpen(false);
-    toast("Video YouTube ditambahkan ke catatan.", "success");
+    toast("Video tersimpan — tempel transkrip bila ingin diringkas/dibuatkan soal.", "success");
+    await openModal(note);
   };
 
   const addFolder = () => {
@@ -489,6 +540,8 @@ export function BelajarStudio() {
 
   const openModal = async (note: BelajarNote) => {
     setOpenNote(note);
+    setTextDraft(note.text);
+    setCommandInput("");
     setSlideMode(note.kind === "slide");
     setSlideIndex(0);
     setMediaUrl(null);
@@ -504,8 +557,83 @@ export function BelajarStudio() {
     setMediaUrl(null);
   };
 
-  const turnIntoLesson = async (note: BelajarNote) => {
-    const topicSource = note.text.trim() || note.title;
+  const executeCommand = async (note: BelajarNote, instruction: string) => {
+    const trimmed = instruction.trim();
+    if (!trimmed) return;
+    const kind = interpretCommand(trimmed);
+    const contextText = note.text.trim();
+    if (!contextText) {
+      toast("Materi ini belum punya teks. Simpan transkrip atau uraian dulu di kolom teks bawah.", "error");
+      return;
+    }
+    setBusy(true);
+    setStatus("Menyiapkan perintah…");
+    try {
+      let text = "";
+      let provider = "";
+      const chain = await runAiChain(buildCommandPrompt(trimmed, note.title, contextText), keys, setStatus);
+      if (chain && chain.text) {
+        text = chain.text;
+        provider = chain.provider;
+      } else {
+        const local = runLocalCommand(kind, trimmed, note);
+        text = local.text;
+        provider = "Mesin lokal LEGACY";
+        if (chain && chain.failures.length > 0) {
+          toast(`AI eksternal gagal (${chain.failures[0].slice(0, 100)}). Memakai mesin lokal.`, "error");
+        }
+      }
+      const titlePrefix =
+        kind === "ringkas"
+          ? `Ringkasan: ${note.title}`
+          : kind === "soal"
+            ? `Soal: ${note.title}`
+            : kind === "glosarium"
+              ? `Glosarium: ${note.title}`
+              : trimmed.slice(0, 70);
+      const result: BelajarNote = {
+        id: createId(),
+        kind: "teks",
+        title: titlePrefix.slice(0, 90),
+        text,
+        folder: note.folder,
+        createdAt: Date.now(),
+        mediaType: null,
+        mediaName: null,
+        youtubeId: null,
+        durationSec: null,
+        source: "ai",
+        provider,
+        parentId: note.id,
+      };
+      await persistNote(result);
+      setCommandInput("");
+      toast(`Perintah selesai — ${provider}.`, "success");
+    } catch (error) {
+      toast(error instanceof Error ? error.message : "Perintah gagal dijalankan.", "error");
+    } finally {
+      setBusy(false);
+      setStatus(null);
+    }
+  };
+
+  const saveNoteText = async (note: BelajarNote, text: string) => {
+    const updated = { ...note, text };
+    await persistNote(updated);
+    setOpenNote(updated);
+    toast("Teks tersimpan — materi siap diperintah.", "success");
+  };
+
+  const copyResult = async (note: BelajarNote) => {
+    try {
+      await navigator.clipboard.writeText(note.text);
+      toast("Hasil disalin ke clipboard.", "success");
+    } catch {
+      toast("Browser menolak akses clipboard.", "error");
+    }
+  };
+
+  const turnIntoLesson = async (note: BelajarNote) => {    const topicSource = note.text.trim() || note.title;
     setBusy(true);
     setStatus("Menyusun pelajaran dari catatan…");
     try {
@@ -522,6 +650,12 @@ export function BelajarStudio() {
       };
       await persistNote(lesson);
       toast(`Pelajaran dibuat dengan ${result.provider}.`, "success");
+      if (result.local && result.failures.length > 0) {
+        toast(
+          `AI eksternal gagal: ${result.failures[0].slice(0, 110)}. Coba lagi beberapa saat atau tambahkan kunci cadangan.`,
+          "error",
+        );
+      }
     } catch (error) {
       toast(error instanceof Error ? error.message : "Gagal membuat pelajaran.", "error");
     } finally {
@@ -544,6 +678,24 @@ export function BelajarStudio() {
     toast("Pengaturan AI disimpan di perangkat ini.", "success");
   };
 
+  const openInPopup = (url: string) => {
+    window.open(url, "malbelajar-provider", "width=980,height=760,noopener");
+  };
+
+  const runKeyTest = async () => {
+    setTestingKeys(true);
+    setKeyTest(null);
+    try {
+      const results = await testAiKeys({
+        gemini: keyDraft.gemini,
+        openrouter: keyDraft.openrouter,
+      });
+      setKeyTest(results);
+    } finally {
+      setTestingKeys(false);
+    }
+  };
+
   const toggleView = (mode: ViewMode) => {
     setViewMode(mode);
     window.localStorage.setItem(KEY_VIEW, mode);
@@ -552,6 +704,7 @@ export function BelajarStudio() {
   const allFolders = useMemo(() => [...folders], [folders]);
   const filtered = useMemo(() => {
     return notes.filter((note) => {
+      if (note.parentId) return false;
       if (folderFilter !== "semua" && note.folder !== folderFilter) return false;
       if (kindFilter !== "semua" && note.kind !== kindFilter) return false;
       if (query.trim()) {
@@ -561,6 +714,13 @@ export function BelajarStudio() {
       return true;
     });
   }, [notes, folderFilter, kindFilter, query]);
+
+  const childResults = useMemo(() => {
+    if (!openNote) return [];
+    return notes
+      .filter((note) => note.parentId === openNote.id)
+      .sort((a, b) => a.createdAt - b.createdAt);
+  }, [notes, openNote]);
 
   const kindChips: Array<{ id: KindFilter; label: string }> = [
     { id: "semua", label: "Semua" },
@@ -608,22 +768,33 @@ export function BelajarStudio() {
             <div>
               <h2 className="font-display text-base font-bold text-ink">AI &amp; akun sendiri</h2>
               <p className="mt-1 text-xs leading-relaxed text-muted">
-                Tanpa kunci, MalBelajarYuk memakai mesin lokal LEGACY. Tambahkan kunci API milikmu agar materi
-                disusun oleh AI eksternal — jika kuota AI pertama habis, otomatis dicoba AI cadangan, lalu mesin
-                lokal. Kunci hanya disimpan di perangkat ini dan tidak dikirim ke server LEGACY.
+                Layanan AI gratis tanpa kunci sudah tidak tersedia lagi, jadi jalur gratisnya adalah{" "}
+                <strong className="text-ink">kunci API gratis</strong>: buka AI Studio lewat tombol di bawah, masuk
+                dengan akun Google-mu, salin kuncinya, lalu tempel di sini — gratis, tanpa kartu kredit. Bila kuota AI
+                utama habis, OpenRouter (bila kuncinya diisi) dicoba otomatis, lalu mesin lokal sebagai cadangan
+                terakhir. Kunci hanya disimpan di perangkat ini dan tidak dikirim ke server LEGACY.
               </p>
             </div>
             <label className="block">
-              <span className="mb-1.5 flex items-center justify-between text-[11px] font-bold uppercase tracking-[0.12em] text-muted">
+              <span className="mb-1.5 flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-muted">
                 Kunci API Gemini (akun Google / AI Studio)
-                <a
-                  href="https://aistudio.google.com/apikey"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="link-underline font-medium normal-case tracking-normal text-aqua"
-                >
-                  Dapatkan kunci gratis
-                </a>
+                <span className="flex items-center gap-2 normal-case tracking-normal">
+                  <button
+                    type="button"
+                    onClick={() => openInPopup("https://aistudio.google.com/apikey")}
+                    className="link-underline font-medium text-aqua"
+                  >
+                    Buka AI Studio
+                  </button>
+                  <a
+                    href="https://aistudio.google.com/apikey"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="link-underline font-medium text-muted hover:text-aqua"
+                  >
+                    Tab baru
+                  </a>
+                </span>
               </span>
               <input
                 type="password"
@@ -633,18 +804,32 @@ export function BelajarStudio() {
                 className="filter-select w-full pl-3"
                 autoComplete="off"
               />
+              {keyTest?.gemini ? (
+                <span className={keyTest.gemini.startsWith("Terhubung") ? "mt-1.5 block text-xs text-emerald-300" : "mt-1.5 block text-xs text-rose-300"}>
+                  {keyTest.gemini}
+                </span>
+              ) : null}
             </label>
             <label className="block">
-              <span className="mb-1.5 flex items-center justify-between text-[11px] font-bold uppercase tracking-[0.12em] text-muted">
-                Kunci API OpenRouter (cadangan)
-                <a
-                  href="https://openrouter.ai/keys"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="link-underline font-medium normal-case tracking-normal text-aqua"
-                >
-                  Buat kunci OpenRouter
-                </a>
+              <span className="mb-1.5 flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-muted">
+                Kunci API OpenRouter (cadangan, gratis)
+                <span className="flex items-center gap-2 normal-case tracking-normal">
+                  <button
+                    type="button"
+                    onClick={() => openInPopup("https://openrouter.ai/keys")}
+                    className="link-underline font-medium text-aqua"
+                  >
+                    Buka OpenRouter
+                  </button>
+                  <a
+                    href="https://openrouter.ai/keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="link-underline font-medium text-muted hover:text-aqua"
+                  >
+                    Tab baru
+                  </a>
+                </span>
               </span>
               <input
                 type="password"
@@ -654,13 +839,18 @@ export function BelajarStudio() {
                 className="filter-select w-full pl-3"
                 autoComplete="off"
               />
+              {keyTest?.openrouter ? (
+                <span className={keyTest.openrouter.startsWith("Terhubung") ? "mt-1.5 block text-xs text-emerald-300" : "mt-1.5 block text-xs text-rose-300"}>
+                  {keyTest.openrouter}
+                </span>
+              ) : null}
             </label>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs text-muted">
                 Status:{" "}
                 {keys.gemini || keys.openrouter
                   ? `AI eksternal aktif (${[keys.gemini && "Gemini", keys.openrouter && "OpenRouter"].filter(Boolean).join(" → ")})`
-                  : "Mesin lokal LEGACY"}
+                  : "Mesin lokal LEGACY — tambahkan kunci gratis untuk AI sungguhan"}
               </p>
               <div className="flex gap-2">
                 <button
@@ -670,10 +860,19 @@ export function BelajarStudio() {
                     window.localStorage.removeItem(KEY_GEMINI);
                     window.localStorage.removeItem(KEY_OPENROUTER);
                     setKeys({ gemini: "", openrouter: "" });
+                    setKeyTest(null);
                   }}
                   className="btn-ghost h-9 px-3.5 text-xs"
                 >
                   Hapus kunci
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void runKeyTest()}
+                  disabled={testingKeys || (!keyDraft.gemini.trim() && !keyDraft.openrouter.trim())}
+                  className="btn-ghost h-9 px-3.5 text-xs"
+                >
+                  {testingKeys ? "Menguji…" : "Tes koneksi"}
                 </button>
                 <button type="button" onClick={saveKeys} className="btn-primary h-9 px-4 text-xs">
                   Simpan pengaturan
@@ -986,6 +1185,104 @@ export function BelajarStudio() {
                     <MarkdownBlocks text={openNote.text} />
                   </div>
                 )}
+              </div>
+            ) : null}
+
+            <div className="mt-5 rounded-2xl border border-iris/20 bg-iris/[0.06] p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-aqua">Perintahkan materi ini</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {["Ringkas materinya", "Buat soal pilihan ganda", "Buat glosarium istilah"].map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setCommandInput(label)}
+                    className="chip border-iris/25 text-muted transition-colors hover:text-ink"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-2.5 flex flex-col gap-2 sm:flex-row">
+                <label htmlFor="belajar-command" className="sr-only">
+                  Perintah untuk materi ini
+                </label>
+                <input
+                  id="belajar-command"
+                  value={commandInput}
+                  onChange={(e) => setCommandInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !busy) void executeCommand(openNote, commandInput);
+                  }}
+                  maxLength={300}
+                  placeholder="cth: ringkas jadi 5 poin, buat 10 soal isian…"
+                  className="filter-select h-10 min-w-0 flex-1 pl-3 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => void executeCommand(openNote, commandInput)}
+                  disabled={busy || !commandInput.trim()}
+                  className="btn-primary h-10 px-4 text-xs"
+                >
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <ArrowUp className="h-4 w-4" aria-hidden="true" />}
+                  Jalankan
+                </button>
+              </div>
+              {busy && status ? <p className="mt-2 text-xs text-muted">{status}</p> : null}
+              {!openNote.text.trim() ? (
+                <div className="mt-3">
+                  <label htmlFor="belajar-transkrip" className="text-[11px] font-semibold text-muted">
+                    Materi ini belum punya teks. Tempel transkrip atau uraian agar bisa diringkas dan dibuatkan soal.
+                  </label>
+                  <textarea
+                    id="belajar-transkrip"
+                    rows={4}
+                    value={textDraft}
+                    onChange={(e) => setTextDraft(e.target.value)}
+                    placeholder="Tempel transkrip video atau ringkasan manual di sini…"
+                    className="mt-1.5 w-full resize-y rounded-xl border border-line/10 bg-canvas/50 p-3 text-sm leading-relaxed text-ink outline-none placeholder:text-muted/60"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void saveNoteText(openNote, textDraft)}
+                    disabled={!textDraft.trim()}
+                    className="btn-ghost mt-2 h-9 px-3.5 text-xs"
+                  >
+                    Simpan teks
+                  </button>
+                </div>
+              ) : null}
+            </div>
+
+            {childResults.length > 0 ? (
+              <div className="mt-4 space-y-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
+                  Hasil perintah ({childResults.length})
+                </p>
+                {childResults.map((result) => (
+                  <div key={result.id} className="rounded-xl border border-line/10 bg-cell/40 p-3.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className="font-display text-xs font-bold text-ink">{result.title}</h4>
+                      <span className="shrink-0 text-[10px] text-muted">{result.provider}</span>
+                    </div>
+                    <div className="mt-2 max-h-72 overflow-y-auto rounded-lg border border-line/[0.07] bg-line/[0.02] p-3">
+                      <MarkdownBlocks text={result.text} />
+                    </div>
+                    <div className="mt-2 flex gap-2">
+                      <button type="button" onClick={() => void copyResult(result)} className="btn-ghost h-8 px-3 text-[11px]">
+                        <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                        Salin
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleDelete(result)}
+                        className="btn-ghost ml-auto h-8 px-3 text-[11px] text-rose-300 hover:border-rose-400/30"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                        Hapus
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : null}
 

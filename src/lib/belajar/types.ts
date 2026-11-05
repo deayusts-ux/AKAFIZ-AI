@@ -15,6 +15,7 @@ export interface BelajarNote {
   durationSec: number | null;
   source: NoteSource;
   provider: string | null;
+  parentId?: string;
 }
 
 export const NOTE_KIND_LABEL: Record<NoteKind, string> = {

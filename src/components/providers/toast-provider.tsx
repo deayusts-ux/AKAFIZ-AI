@@ -2,9 +2,9 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { Heart, Info, X } from "lucide-react";
+import { AlertTriangle, Heart, Info, X } from "lucide-react";
 
-type ToastTone = "default" | "favorite";
+type ToastTone = "default" | "favorite" | "danger";
 
 interface ToastItem {
   id: number;
@@ -69,11 +69,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               className={
                 item.tone === "favorite"
                   ? "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-500/15 text-rose-400"
-                  : "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-iris/15 text-aqua"
+                  : item.tone === "danger"
+                    ? "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-500/15 text-rose-300"
+                    : "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-iris/15 text-aqua"
               }
             >
               {item.tone === "favorite" ? (
                 <Heart className="h-4 w-4 fill-current" />
+              ) : item.tone === "danger" ? (
+                <AlertTriangle className="h-4 w-4" />
               ) : (
                 <Info className="h-4 w-4" />
               )}

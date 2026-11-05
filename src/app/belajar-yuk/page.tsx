@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BookOpenCheck, GraduationCap, KeyRound, Mic, MonitorPlay, RefreshCcw, ShieldCheck, Upload } from "lucide-react";
+import { ArrowRight, BookOpenCheck, GraduationCap, KeyRound, Mic, MonitorPlay, RefreshCcw, ShieldCheck, Sparkles, Upload } from "lucide-react";
 import { BelajarStudio } from "@/components/belajar/belajar-studio";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SectionHeading } from "@/components/section-heading";
@@ -55,14 +55,19 @@ const FEATURES = [
     text: "Tempel tautan video; judul diambil otomatis bila tersedia dan video ditonton tanpa keluar LEGACY.",
   },
   {
+    icon: Sparkles,
+    title: "Perintah materi",
+    text: "Setiap file, rekaman, atau video yang tersimpan langsung bisa diperintah: ringkas, buat soal, atau buat glosarium.",
+  },
+  {
     icon: KeyRound,
-    title: "Akun AI sendiri",
-    text: "Tambahkan kunci API Gemini atau OpenRouter milikmu; kunci disimpan hanya di perangkat ini.",
+    title: "AI gratis dengan kunci",
+    text: "Jawaban model AI memakai kunci API gratis dari akun Google-mu (AI Studio) atau OpenRouter; kunci disimpan hanya di perangkat ini.",
   },
   {
     icon: RefreshCcw,
-    title: "AI saling mencadangkan",
-    text: "Jika kuota AI pertama habis, AI cadangan dicoba otomatis; bila semua gagal, mesin lokal LEGACY mengambil alih.",
+    title: "Mesin lokal sebagai cadangan",
+    text: "Tanpa kunci, ringkasan dan soal tetap dibuat mesin lokal dari isi materi. Bila kunci terisi dan kuota habis, AI berikutnya dicoba otomatis.",
   },
 ];
 
