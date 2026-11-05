@@ -47,17 +47,17 @@ const FEATURES = [
   {
     icon: Upload,
     title: "Unggah materi",
-    text: "Dokumen teks dibaca isinya, PDF dan gambar bisa dipratinjau, audio dan video langsung bisa diputar.",
+    text: "PDF, DOCX, PPTX, dan berkas teks dibaca isinya langsung di browser, jadi bisa diringkas dan dibuatkan soal. Gambar dipratinjau, audio dan video diputar.",
   },
   {
     icon: MonitorPlay,
     title: "Video YouTube",
-    text: "Tempel tautan video; judul diambil otomatis bila tersedia dan video ditonton tanpa keluar LEGACY.",
+    text: "Tempel tautan video (judul diambil otomatis) dan tempel transkripnya sekali; setelah itu videonya siap diperintah seperti materi lain.",
   },
   {
     icon: Sparkles,
     title: "Perintah materi",
-    text: "Setiap file, rekaman, atau video yang tersimpan langsung bisa diperintah: ringkas, buat soal, atau buat glosarium.",
+    text: "Setiap materi yang tersimpan langsung bisa diperintah: ringkas, buat soal beserta kunci, atau buat glosarium. Hasilnya tersimpan di bawah materinya.",
   },
   {
     icon: KeyRound,

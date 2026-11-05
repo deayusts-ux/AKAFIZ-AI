@@ -98,8 +98,8 @@ Fitur pendukung: analisis kata/kalimat/paragraf, perkiraan keterbacaan dari panj
 **Membuat materi**
 - **Ketik topik** — pelajaran dibuat dengan format konsisten: Ringkasan, Konsep Kunci, Penjelasan Langkah demi Langkah, Contoh, Latihan, Kunci Jawaban, dan Glosarium.
 - **Rekam** — merekam audio lewat mikrofon dengan transkripsi langsung (Web Speech API, bahasa Indonesia) bila didukung browser; hasil tersimpan sebagai catatan audio.
-- **Unggah** — membawa berkas teks (`.txt`, `.md`, `.csv`, `.json`, `.srt`, `.vtt`) atau media gambar/audio/video/PDF sebagai catatan dokumen.
-- **YouTube** — menempel tautan video; judul diambil lewat oEmbed dan thumbnail resmi ditampilkan; pemutar memakai embed `youtube-nocookie`.
+- **Unggah** — isi teks dibaca langsung di browser: PDF (`pdfjs-dist`), DOCX/PPTX (`fflate` + pembacaan XML), dan berkas teks/kapter (`.txt`, `.md`, `.csv`, `.json`, `.srt`, `.vtt`, `.html`, dll.). Gambar/audio/video disimpan sebagai catatan media agar bisa diputar atau dilihat, lengkap dengan kolom transkrip.
+- **YouTube** — menempel tautan video; judul diambil lewat oEmbed resmi YouTube dan thumbnail resmi ditampilkan; pemutar memakai embed `youtube-nocookie`. Transkrip ditempel sekali saat menambah tautan sehingga video langsung bisa diperintah.
 
 **AI dengan rantai cadangan**
 - Jawaban model AI memakai **kunci API gratis milik pengguna**: **Gemini** (`gemini-3.8-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`) → **OpenRouter** (model gratis `google/gemma-4-31b-it:free`, `google/gemma-4-26b-a4b-it:free`, `nvidia/nemotron-3-ultra-550b-a55b:free`) → **mesin lokal** yang deterministik. Bila satu penyedia gagal, penyedia berikutnya dicoba otomatis, penyedia yang menghasilkan teks selalu dicantumkan, dan alasan kegagalan ditampilkan. Tombol **Tes koneksi** menguji kunci sebelum disimpan.
@@ -109,9 +109,10 @@ Fitur pendukung: analisis kata/kalimat/paragraf, perkiraan keterbacaan dari panj
 **Perintah materi (alur seperti GPT)**
 - Setiap materi yang tersimpan — dokumen unggah, rekaman, hasil generate, atau tautan video — otomatis dibuka kembali dengan bilah perintah. Ketik perintah bebas atau pakai pintasan **Ringkas materinya**, **Buat soal pilihan ganda**, **Buat glosarium istilah**.
 - Perintah dijalankan lewat rantai AI yang sama; tanpa kunci, mesin lokal memprosesnya: ringkasan ekstraktif (skor frekuensi kata kunci per kalimat), soal pilihan ganda + benar/salah + isian dari pola definisi (`… adalah/yaitu/merupakan …`) dengan kunci jawaban, dan glosarium dari istilah-istilah tersebut. Hasil disimpan sebagai catatan anak (`parentId`) yang muncul di thread materi asalnya, bisa disalin atau dihapus.
-- Video YouTube dan berkas tanpa teks (gambar/PDF/audio) tidak punya isi tekstual untuk diolah, jadi modal menyediakan kolom tempel transkrip/uraian lebih dulu; ini dinyatakan jujur di antarmuka, bukan berpura-pura bisa membaca video.
+- Catatan jujur 2026: caption YouTube tidak bisa diambil otomatis dari aplikasi browser — `timedtext` kini memerlukan token `pot` bukti-asal (respons selalu kosong), `youtubei/v1/player` membalas 403, dan layanan transkrip pihak tiga diblokir Cloudflare/App Check. Karena itu transkrip ditempel sendiri saat menambah tautan; begitu tersimpan, ringkas dan soal langsung jalan. Berkas hasil pindai (PDF tanpa teks) juga butuh transkrip/uraian manual, dan antarmuka menyatakannya dengan jujur.
 
-**Pustaka catatan**- Jenis catatan: Teks, Slide (pelajaran terstruktur), Dokumen, Audio, YouTube — dengan filter, pencarian, tampilan galeri/daftar, dan folder buatan pengguna.
+**Pustaka catatan**
+- Jenis catatan: Teks, Slide (pelajaran terstruktur), Dokumen, Audio, YouTube — dengan filter, pencarian, tampilan galeri/daftar, dan folder buatan pengguna.
 - Catatan pelajaran bisa dibuka dalam **mode slide** (navigasi per bagian `##`) atau **mode baca**, dipindah antar-folder, diubah kembali jadi pelajaran, diunduh, atau dihapus.
 - Catatan audio/video tersimpan sebagai blob di IndexedDB; stiker streak dan level dihitung dari tanggal dan jumlah catatan.
 
@@ -263,7 +264,7 @@ src/
     crypto/market.ts         # generator candle simulasi, timeframe, agregasi, formatter
     writing/analyze.ts       # mesin lokal: rapikan, padatkan, formalkan, pecah, analisis
     idea-types.ts, idea-icons.ts # tipe sumber dan peta ikon bidang
-    belajar/                 # tipe, IndexedDB, mesin pelajaran lokal, orkestrasi AI + rantai cadangan
+    belajar/                 # tipe, IndexedDB, ekstraksi teks PDF/DOCX/PPTX di browser, mesin pelajaran lokal, mesin perintah (ringkas/soal/glosarium), orkestrasi AI + rantai cadangan
   fonts/                     # font variabel lokal (Inter, Plus Jakarta Sans)
   lib/                       # tipe, util, auth sesi, notifikasi login, konfigurasi situs
   middleware.ts              # gerbang akses untuk seluruh halaman & API

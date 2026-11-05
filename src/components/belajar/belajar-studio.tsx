@@ -30,6 +30,7 @@ import { useToast } from "@/components/providers/toast-provider";
 import { generateLesson, runAiChain, testAiKeys, type AiKeys, type KeyTestResults } from "@/lib/belajar/ai";
 import { buildCommandPrompt, interpretCommand, runLocalCommand } from "@/lib/belajar/commands";
 import { deleteNote, listNotes, loadBlob, saveNote } from "@/lib/belajar/db";
+import { extractFileText } from "@/lib/belajar/extract";
 import {
   createId,
   formatDuration,
@@ -44,7 +45,8 @@ const KEY_GEMINI = "legacy-belajar-gemini-key";
 const KEY_OPENROUTER = "legacy-belajar-openrouter-key";
 const KEY_FOLDERS = "legacy-belajar-folders";
 const KEY_VIEW = "legacy-belajar-view";
-const TEXT_EXTENSIONS = /\.(txt|md|markdown|csv|json|srt|vtt)$/i;
+const TEXT_EXTENSIONS = /\.(txt|md|markdown|csv|tsv|json|xml|log|srt|vtt|html|htm)$/i;
+const MAX_EXTRACT_BYTES = 40 * 1024 * 1024;
 
 type KindFilter = "semua" | NoteKind;
 type ViewMode = "galeri" | "daftar";
@@ -249,6 +251,7 @@ export function BelajarStudio() {
 
   const [youtubeOpen, setYoutubeOpen] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [youtubeTranscript, setYoutubeTranscript] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [keyDraft, setKeyDraft] = useState<AiKeys>({ gemini: "", openrouter: "" });
   const [keyTest, setKeyTest] = useState<KeyTestResults | null>(null);
@@ -436,46 +439,58 @@ export function BelajarStudio() {
 
   const handleUpload = async (file: File | undefined) => {
     if (!file) return;
-    if (TEXT_EXTENSIONS.test(file.name)) {
-      const text = await file.text();
-      const note: BelajarNote = {
-        id: createId(),
-        kind: "teks",
-        title: file.name.replace(TEXT_EXTENSIONS, ""),
-        text,
-        folder: folderFilter !== "semua" ? folderFilter : "Umum",
-        createdAt: Date.now(),
-        mediaType: null,
-        mediaName: file.name,
-        youtubeId: null,
-        durationSec: null,
-        source: "unggah",
-        provider: null,
-      };
-      await persistNote(note);
-      toast("Dokumen tersimpan — siap diperintah (ringkas, soal, glosarium).", "success");
-      await openModal(note);
-      return;
-    }
     const isAudio = file.type.startsWith("audio/");
     const isVideo = file.type.startsWith("video/");
     const isImage = file.type.startsWith("image/");
+    const isMedia = isAudio || isVideo || isImage;
+    const isTextFile = TEXT_EXTENSIONS.test(file.name);
+    let text = "";
+    let readError = "";
+    if (!isMedia) {
+      if (file.size > MAX_EXTRACT_BYTES) {
+        toast("Berkasnya melebihi 40 MB, terlalu berat untuk dibaca di browser. Tempelkan teksnya saja.", "error");
+        return;
+      }
+      setBusy(true);
+      setStatus("Membaca isi dokumen…");
+      try {
+        text = isTextFile ? await file.text() : ((await extractFileText(file))?.text ?? "");
+      } catch (error) {
+        readError = error instanceof Error ? error.message.slice(0, 90) : "format tidak dikenal";
+      }
+      setBusy(false);
+      setStatus(null);
+    }
     const note: BelajarNote = {
       id: createId(),
-      kind: isAudio || isVideo ? "audio" : "dokumen",
-      title: file.name,
-      text: "",
+      kind: isAudio || isVideo ? "audio" : isTextFile ? "teks" : "dokumen",
+      title: isTextFile ? file.name.replace(TEXT_EXTENSIONS, "") : file.name,
+      text,
       folder: folderFilter !== "semua" ? folderFilter : "Umum",
       createdAt: Date.now(),
-      mediaType: file.type || "application/octet-stream",
+      mediaType: isMedia || isTextFile ? null : file.type || "application/octet-stream",
       mediaName: file.name,
       youtubeId: null,
       durationSec: null,
       source: "unggah",
       provider: null,
     };
-    await persistNote(note, file);
-    toast(isAudio || isVideo ? "Media tersimpan — siap diperintah." : isImage ? "Gambar tersimpan — siap diperintah." : "Berkas tersimpan — siap diperintah.", "success");
+    await persistNote(note, isTextFile ? null : file);
+    if (isMedia) {
+      toast(
+        isImage
+          ? "Gambar tersimpan. Tempel teksnya di kolom bawah supaya bisa diringkas atau dibuatkan soal."
+          : "Rekaman tersimpan. Tempel transkripnya di kolom bawah supaya materi bisa diperintah.",
+        readError ? "error" : "success",
+      );
+    } else if (text.trim() === "") {
+      toast(
+        `Tidak ada teks yang bisa dibaca dari berkas ini${readError ? ` (${readError})` : " — kemungkinan hasil scan"}. Tempel teksnya di kolom bawah agar bisa diringkas dan dibuatkan soal.`,
+        "error",
+      );
+    } else {
+      toast(`Teks dokumen terbaca (${text.length.toLocaleString("id-ID")} karakter) — siap diperintah.`, "success");
+    }
     await openModal(note);
   };
 
@@ -487,7 +502,7 @@ export function BelajarStudio() {
     }
     let title = `Video YouTube ${id}`;
     try {
-      const res = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(`https://www.youtube.com/watch?v=${id}`)}`);
+      const res = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(`https://www.youtube.com/watch?v=${id}`)}`);
       if (res.ok) {
         const data = (await res.json()) as { title?: string };
         if (data.title) title = data.title;
@@ -495,11 +510,12 @@ export function BelajarStudio() {
     } catch {
       /* judul manual tetap dipakai */
     }
+    const transcript = youtubeTranscript.trim();
     const note: BelajarNote = {
       id: createId(),
       kind: "youtube",
       title,
-      text: "",
+      text: transcript,
       folder: folderFilter !== "semua" ? folderFilter : "Umum",
       createdAt: Date.now(),
       mediaType: null,
@@ -511,8 +527,14 @@ export function BelajarStudio() {
     };
     await persistNote(note);
     setYoutubeUrl("");
+    setYoutubeTranscript("");
     setYoutubeOpen(false);
-    toast("Video tersimpan — tempel transkrip bila ingin diringkas/dibuatkan soal.", "success");
+    toast(
+      transcript
+        ? `Transkrip tersimpan (${transcript.length.toLocaleString("id-ID")} karakter) — video siap diringkas dan dibuatkan soal.`
+        : "Video tersimpan. YouTube tidak mengizinkan pengambilan transkrip dari browser, jadi tempel transkripnya di kolom teks materi ini agar bisa diperintah.",
+      transcript ? "success" : "error",
+    );
     await openModal(note);
   };
 
@@ -957,22 +979,38 @@ export function BelajarStudio() {
             </button>
           </div>
           {youtubeOpen ? (
-            <div className="mt-3 flex flex-col gap-2 rounded-xl border border-line/10 bg-line/[0.03] p-3 sm:flex-row">
-              <input
-                value={youtubeUrl}
-                onChange={(e) => setYoutubeUrl(e.target.value)}
-                placeholder="Tempel tautan YouTube, mis. https://youtu.be/…"
-                className="filter-select min-w-0 flex-1 pl-3"
+            <div className="mt-3 space-y-2.5 rounded-xl border border-line/10 bg-line/[0.03] p-3">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  value={youtubeUrl}
+                  onChange={(e) => setYoutubeUrl(e.target.value)}
+                  placeholder="Tempel tautan YouTube, mis. https://youtu.be/…"
+                  className="filter-select min-w-0 flex-1 pl-3"
+                />
+                <button type="button" onClick={() => void handleYoutube()} className="btn-primary h-10 px-4 text-xs">
+                  Tambahkan
+                </button>
+              </div>
+              <label htmlFor="belajar-yt-transcript" className="block text-[11px] font-semibold leading-relaxed text-muted">
+                Transkrip videonya (opsional, tapi inilah yang membuat materi bisa langsung diringkas dan dibuatkan soal).
+                YouTube tidak mengizinkan aplikasinya mengambil transkrip, jadi salin sendiri: di bawah video klik
+                titik tiga &rarr; Tampilkan transkrip &rarr; blok semua teks &rarr; Ctrl+C.
+              </label>
+              <textarea
+                id="belajar-yt-transcript"
+                rows={4}
+                value={youtubeTranscript}
+                onChange={(e) => setYoutubeTranscript(e.target.value)}
+                maxLength={80000}
+                placeholder="Tempel transkrip di sini…"
+                className="w-full resize-y rounded-xl border border-line/10 bg-canvas/50 p-3 text-sm leading-relaxed text-ink outline-none placeholder:text-muted/60"
               />
-              <button type="button" onClick={() => void handleYoutube()} className="btn-primary h-10 px-4 text-xs">
-                Tambahkan
-              </button>
             </div>
           ) : null}
           <input
             ref={fileInputRef}
             type="file"
-            accept="audio/*,video/*,image/*,.pdf,.txt,.md,.markdown,.csv,.json,.srt,.vtt"
+            accept="audio/*,video/*,image/*,.pdf,.docx,.pptx,.txt,.md,.markdown,.csv,.tsv,.json,.xml,.log,.srt,.vtt,.html,.htm"
             className="hidden"
             onChange={(e) => {
               void handleUpload(e.target.files?.[0]);
