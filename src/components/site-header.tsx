@@ -16,10 +16,16 @@ const navLinks = [
   { href: "/explore", label: "Explore AI" },
   { href: "/explore-idea", label: "Explore Idea" },
   { href: "/crypto", label: "Crypto Academy" },
+  { href: "/ai-humanizer", label: "AI Humanizer" },
   { href: "/categories", label: "Kategori" },
   { href: "/trending", label: "Trending" },
-  { href: "/favorites", label: "Favorit" },
   { href: "/tentang-saya", label: "Tentang Saya" },
+];
+
+const mobileNavLinks = [
+  ...navLinks.slice(0, 7),
+  { href: "/favorites", label: "Favorit" },
+  ...navLinks.slice(7),
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -28,6 +34,7 @@ function isActive(pathname: string, href: string): boolean {
   if (href === "/explore-idea") return pathname.startsWith("/explore-idea");
   if (href === "/categories") return pathname.startsWith("/categories");
   if (href === "/crypto") return pathname === "/crypto" || pathname.startsWith("/crypto/");
+  if (href === "/ai-humanizer") return pathname === "/ai-humanizer" || pathname.startsWith("/ai-humanizer/");
   return pathname === href;
 }
 
@@ -122,7 +129,7 @@ export function SiteHeader() {
             className="absolute inset-x-0 top-full z-50 border-b border-line/10 bg-canvas shadow-[0_30px_60px_-30px_rgba(0,0,0,0.65)] xl:hidden"
           >
             <nav aria-label="Navigasi mobile" className="container-page grid grid-cols-2 gap-2 py-5">
-              {navLinks.map((link) => (
+              {mobileNavLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
