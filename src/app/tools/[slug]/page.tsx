@@ -11,6 +11,7 @@ import {
   Globe2,
   Info,
   Layers,
+  PenLine,
   ShieldCheck,
   Sparkles,
   Star,
@@ -27,6 +28,7 @@ import { ToolLogo } from "@/components/tool-logo";
 import { VisitButton } from "@/components/visit-button";
 import { getCategory } from "@/data/categories";
 import { getTool, getToolsByCategory, newTools, tools } from "@/data/tools";
+import { hasStudioMode } from "@/data/humanizer-studio";
 import { PRICING_DESCRIPTION } from "@/lib/types";
 import { categoryIcons } from "@/lib/icons";
 import { site } from "@/lib/site";
@@ -236,6 +238,15 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
 
               <div className="mt-5 flex flex-wrap gap-2">
                 <VisitButton tool={tool} className="h-11 px-5" />
+                {hasStudioMode(tool.slug) ? (
+                  <Link
+                    href={`/ai-humanizer/studio?tool=${tool.slug}`}
+                    className="btn-ghost h-11 px-4 text-xs"
+                  >
+                    <PenLine className="h-4 w-4" aria-hidden="true" />
+                    Coba mode tulis
+                  </Link>
+                ) : null}
                 <FavoriteButton
                   slug={tool.slug}
                   name={tool.name}

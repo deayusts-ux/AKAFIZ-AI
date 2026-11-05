@@ -1,15 +1,15 @@
 # LEGACY AI
 
-Direktori AI terkurasi: **150 tool**, **20 kategori**, tautan resmi, harga transparan, pencarian cepat, dan koleksi favorit yang tersimpan lokal — ditambah **Explore Idea** (58 sumber referensi di 14 bidang), **panduan AI Humanizer**, **Crypto Academy**, e-book interaktif 10 bab tentang fundamental crypto dan candlestick, lengkap dengan portal akses privat dan halaman profil kreator.
+Direktori AI terkurasi: **150 tool**, **20 kategori**, tautan resmi, harga transparan, pencarian cepat, dan koleksi favorit yang tersimpan lokal — ditambah **Explore Idea** (58 sumber referensi di 14 bidang), **panduan AI Humanizer dengan Ruang Tulis di dalam situs**, **Crypto Academy**, e-book interaktif 10 bab tentang fundamental crypto dan candlestick, lengkap dengan portal akses privat dan halaman profil kreator.
 
-Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 294 halaman di-prerender statis saat build, ditambah route dinamis untuk login, logout, permintaan kode, dan notifikasi.
+Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 295 halaman di-prerender statis saat build, ditambah route dinamis untuk login, logout, permintaan kode, dan notifikasi.
 
 ## Fitur
 
 - **Beranda** dengan hero, pencarian, kategori populer, spotlight editor, dan daftar tool yang sedang trending.
 - **Explore AI** dengan pencarian nama/fungsi/kategori, filter kategori dan harga (Gratis, Freemium, Berbayar), urutan, tampilan grid/list, serta URL yang selalu sinkron dengan filter.
 - **Explore Idea** — direktori 58 sumber referensi di 14 bidang (arsitektur, akuntansi, informatika, sipil, hukum, kesehatan, bisnis, desain, psikologi, pertanian, elektro, pendidikan, komunikasi, sains) dengan pencarian, filter kategori dan jenis, urutan, tampilan grid/list, serta halaman detail per sumber (detail di bawah).
-- **AI Humanizer** — panduan 10 alat penulisan ulang dan penyuntingan dengan tautan resmi, tiga rekomendasi untuk tugas kuliah, langkah penggunaan yang sehat, dan catatan tegas bahwa tidak ada alat yang menjamin lolos AI detector (detail di bawah).
+- **AI Humanizer** — panduan 10 alat penulisan ulang dan penyuntingan dengan tautan resmi, tiga rekomendasi untuk tugas kuliah, langkah penggunaan yang sehat, dan catatan tegas bahwa tidak ada alat yang menjamin lolos AI detector — plus **Ruang Tulis** yang bisa dipakai tanpa keluar dari LEGACY (detail di bawah).
 - **Kategori** — 20 halaman kategori dengan daftar tool, statistik, filter, dan rekomendasi kategori terkait.
 - **Halaman detail tool** berisi deskripsi, fitur, harga, rating editorial, alternatif serupa, serta tombol kunjungan ke situs resmi.
 - **Trending** dengan peringkat editor dan skor popularitas yang dapat ditelusuri.
@@ -21,7 +21,7 @@ Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 
 - **Vercel Analytics** — komponen `@vercel/analytics` terpasang di layout; data kunjungan tampil di dashboard Vercel setelah deploy.
 - **Dark / light mode** tanpa flash saat halaman dimuat, responsif hingga mobile, animasi yang menghormati `prefers-reduced-motion`.
 - **SEO lengkap**: metadata per halaman, canonical, Open Graph image, JSON-LD, sitemap, robots, dan manifest.
-- **Tanpa fake link**: setiap tombol kunjungan mengarah ke domain resmi produk dan dibuka di tab baru.
+- **Tanpa fake link**: setiap tautan eksternal mengarah ke domain resmi produk dan dibuka di tab baru; tombol utama AI Humanizer membuka ruang kerja lokal di dalam LEGACY.
 
 Favorit bersifat lokal di browser — tidak ada akun, server penyimpanan, atau pelacakan pengguna.
 
@@ -57,7 +57,7 @@ LEGACY AI tidak berafiliasi dengan sumber-sumber tersebut. Materi dan lisensi se
 
 ## AI Humanizer
 
-Halaman `/ai-humanizer` merangkum 10 alat untuk menulis ulang, merapikan, dan menyunting tulisan. Semua tombol membuka situs resmi masing-masing alat.
+Halaman `/ai-humanizer` merangkum 10 alat untuk menulis ulang, merapikan, dan menyunting tulisan. Tombol **Kunjungi di LEGACY** membuka mode kerja alat tersebut di Ruang Tulis; tombol **Situs resmi** tetap tersedia di sampingnya.
 
 | Alat | Keunggulan |
 | --- | --- |
@@ -78,6 +78,17 @@ Halaman `/ai-humanizer` merangkum 10 alat untuk menulis ulang, merapikan, dan me
 3. **Wordtune** — untuk membuat tulisan lebih mengalir.
 
 **Catatan penting:** tidak ada AI Humanizer yang bisa menjamin tulisan lolos AI Detector atau Turnitin. Gunakan alat ini untuk memperbaiki keterbacaan, mempertahankan makna, dan memastikan tulisan sesuai pemahaman sendiri; aturan integritas akademik tetap berlaku. Daftar disusun berdasarkan fitur dan perbandingan alat, bukan peringkat hasil pengujian independen.
+
+### Ruang Tulis LEGACY
+
+`/ai-humanizer/studio` adalah editor yang berjalan sepenuhnya di browser. Sepuluh alat punya mode kerja masing-masing (`?tool=quillbot`, `?tool=grammarly`, dst.) dengan alur langkah yang berbeda:
+
+- **Rapikan** — spasi ganda, spasi sebelum tanda baca, kata terulang, huruf awal kalimat.
+- **Padatkan** — frasa bertele-tele diganti bentuk ringkas (mis. “pada saat ini” → “saat ini”).
+- **Formalkan** — kata percakapan dan singkatan tidak baku diganti padanan baku (mis. “nggak” → “tidak”).
+- **Pecah kalimat** — kalimat di atas 28 kata dipecah pada penghubung yang aman.
+
+Fitur pendukung: analisis kata/kalimat/paragraf, perkiraan keterbacaan dari panjang kalimat dan kata, skor kerapian mesin lokal (bukan skor AI detector), riwayat kembali, penyimpanan draf di `localStorage`, salin, dan unduh `.txt`. Tidak ada teks yang dikirim ke server. Ruang Tulis bukan salinan layanan pihak ketiga; untuk fitur berbasis model, situs resmi tetap ditautkan. Halaman detail QuillBot, Grammarly, dan Wordtune di katalog utama juga menampilkan pintasan ke mode tulis ini.
 
 ## Crypto Academy
 
@@ -122,7 +133,7 @@ Perintah lain:
 
 ```bash
 npm run typecheck   # TypeScript tanpa emit
-npm run build       # build produksi (294 halaman statis)
+npm run build       # build produksi (295 halaman statis)
 npm start           # menjalankan hasil build
 ```
 
@@ -201,13 +212,15 @@ src/
     tentang-saya/            # halaman profil kreator
     crypto/                  # Crypto Academy (e-book, lab, simulasi, kuis, glosarium, progres, game, tentang)
     explore-idea/            # Explore Idea: direktori, peta bidang, kategori, detail sumber
-    ai-humanizer/            # panduan 10 alat penulisan ulang & penyuntingan
+    ai-humanizer/             # panduan 10 alat + Ruang Tulis (/ai-humanizer/studio)
+    ai-humanizer/studio/      # editor penyuntingan lokal di browser
     categories/[slug]/       # 20 halaman kategori statis
     tools/[slug]/            # 150 halaman detail tool statis
     sitemap.ts, robots.ts, manifest.ts, opengraph-image.tsx
   components/                # komponen UI reusable (cards, header, filters, command menu, dll.)
     crypto/                  # chart SVG, reader tools, kuis, simulasi, glosarium, game, progres
     idea/                    # kartu, baris, dan panel filter Explore Idea
+    humanizer/               # Ruang Tulis: editor, aksi, analisis, pratinjau hasil
     providers/               # favorites + toast context
     monogram.tsx             # monogram inisial berwarna untuk kartu sumber/alat
   data/
@@ -217,9 +230,11 @@ src/
     ideas.ts                 # 58 sumber referensi Explore Idea
     idea-categories.ts       # 14 bidang Explore Idea
     humanizer-tools.ts       # 10 alat AI Humanizer + rekomendasi
+    humanizer-studio.ts      # preset langkah per alat untuk Ruang Tulis
     crypto/                  # 10 bab, 11 pola, 100 soal, 8 simulasi, 59 istilah
   lib/
     crypto/market.ts         # generator candle simulasi, timeframe, agregasi, formatter
+    writing/analyze.ts       # mesin lokal: rapikan, padatkan, formalkan, pecah, analisis
     idea-types.ts, idea-icons.ts # tipe sumber dan peta ikon bidang
   fonts/                     # font variabel lokal (Inter, Plus Jakarta Sans)
   lib/                       # tipe, util, auth sesi, notifikasi login, konfigurasi situs

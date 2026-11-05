@@ -16,6 +16,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/explore-idea`, lastModified, changeFrequency: "weekly", priority: 0.85 },
     { url: `${base}/explore-idea/kategori`, lastModified, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/ai-humanizer`, lastModified, changeFrequency: "monthly", priority: 0.7 },
+    {
+      url: `${base}/ai-humanizer/studio`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
     { url: `${base}/categories`, lastModified, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/trending`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${base}/favorites`, lastModified, changeFrequency: "monthly", priority: 0.4 },

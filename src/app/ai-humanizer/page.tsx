@@ -103,7 +103,8 @@ export default function AiHumanizerPage() {
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted sm:text-[15px]">
               Sepuluh alat untuk menulis ulang, merapikan, dan menyunting tulisan agar lebih jelas
-              dan mengalir. Semua tautan menuju situs resmi masing-masing alat.
+              dan mengalir. Setiap alat bisa langsung dicoba di Ruang Tulis LEGACY, dan tautan
+              resminya tetap tersedia sebagai pembanding.
             </p>
 
             <div className="mt-5 flex flex-wrap gap-2">
@@ -119,10 +120,18 @@ export default function AiHumanizerPage() {
                 <GraduationCap className="h-3.5 w-3.5 text-plasma" aria-hidden="true" />
                 {humanizerStats.recommendations} rekomendasi tugas kuliah
               </span>
+              <span className="chip">
+                <Sparkles className="h-3.5 w-3.5 text-aqua" aria-hidden="true" />
+                Bisa dipakai di LEGACY
+              </span>
             </div>
 
             <div className="mt-6 flex flex-wrap gap-2">
-              <a href="#rekomendasi" className="btn-primary h-11 px-5 text-xs">
+              <Link href="/ai-humanizer/studio" className="btn-primary h-11 px-5 text-xs">
+                <PenLine className="h-4 w-4" aria-hidden="true" />
+                Buka Ruang Tulis
+              </Link>
+              <a href="#rekomendasi" className="btn-ghost h-11 px-4 text-xs">
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
                 Lihat rekomendasi
               </a>
@@ -204,20 +213,30 @@ export default function AiHumanizerPage() {
 
               <div className="flex-1" />
 
-              <a
-                href={tool.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-5 inline-flex h-9 items-center justify-center gap-1 rounded-lg px-3 text-xs font-semibold transition-all duration-300 hover:brightness-110"
-                style={{
-                  color: contrastInk(tool.accent),
-                  backgroundImage: `linear-gradient(115deg, ${tool.accent}, ${tool.accentAlt})`,
-                  boxShadow: `0 10px 24px -14px ${tool.accent}`,
-                }}
-              >
-                Buka situs resmi
-                <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-              </a>
+              <div className="mt-5 flex items-center gap-2">
+                <Link
+                  href={`/ai-humanizer/studio?tool=${tool.slug}`}
+                  className="inline-flex h-9 flex-1 items-center justify-center gap-1 rounded-lg px-3 text-xs font-semibold transition-all duration-300 hover:brightness-110"
+                  style={{
+                    color: contrastInk(tool.accent),
+                    backgroundImage: `linear-gradient(115deg, ${tool.accent}, ${tool.accentAlt})`,
+                    boxShadow: `0 10px 24px -14px ${tool.accent}`,
+                  }}
+                >
+                  Coba di LEGACY
+                  <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </Link>
+                <a
+                  href={tool.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Buka situs resmi ${tool.name}`}
+                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1 rounded-lg border border-line/12 px-2.5 text-[11px] font-semibold text-muted transition-colors hover:border-line/25 hover:text-ink"
+                >
+                  Situs resmi
+                  <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
+                </a>
+              </div>
             </article>
           ))}
         </div>
@@ -293,21 +312,30 @@ export default function AiHumanizerPage() {
                 <p className="rounded-lg border border-line/[0.07] bg-line/[0.02] px-2.5 py-2 text-[11px] leading-relaxed text-muted">
                   {tool.note}
                 </p>
-                <a
-                  href={tool.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`Buka situs resmi ${tool.name}`}
-                  className="inline-flex h-9 w-full items-center justify-center gap-1 rounded-lg px-3 text-xs font-semibold transition-all duration-300 hover:brightness-110"
-                  style={{
-                    color: contrastInk(tool.accent),
-                    backgroundImage: `linear-gradient(115deg, ${tool.accent}, ${tool.accentAlt})`,
-                    boxShadow: `0 10px 24px -14px ${tool.accent}`,
-                  }}
-                >
-                  Kunjungi situs resmi
-                  <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                </a>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Link
+                    href={`/ai-humanizer/studio?tool=${tool.slug}`}
+                    className="inline-flex h-9 flex-1 items-center justify-center gap-1 rounded-lg px-3 text-xs font-semibold transition-all duration-300 hover:brightness-110"
+                    style={{
+                      color: contrastInk(tool.accent),
+                      backgroundImage: `linear-gradient(115deg, ${tool.accent}, ${tool.accentAlt})`,
+                      boxShadow: `0 10px 24px -14px ${tool.accent}`,
+                    }}
+                  >
+                    Kunjungi di LEGACY
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Link>
+                  <a
+                    href={tool.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Buka situs resmi ${tool.name}`}
+                    className="inline-flex h-9 shrink-0 items-center justify-center gap-1 rounded-lg border border-line/12 px-3 text-[11px] font-semibold text-muted transition-colors hover:border-line/25 hover:text-ink"
+                  >
+                    Situs resmi
+                    <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
+                  </a>
+                </div>
               </div>
             </article>
           ))}
