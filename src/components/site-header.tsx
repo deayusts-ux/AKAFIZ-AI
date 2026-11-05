@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 
 const navLinks = [
   { href: "/", label: "Beranda" },
+  { href: "/belajar-yuk", label: "BelajarYuk" },
   { href: "/explore", label: "Explore AI" },
   { href: "/explore-idea", label: "Explore Idea" },
   { href: "/crypto", label: "Crypto Academy" },
@@ -30,6 +31,7 @@ const mobileNavLinks = [
 
 function isActive(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
+  if (href === "/belajar-yuk") return pathname.startsWith("/belajar-yuk");
   if (href === "/explore") return pathname === "/explore" || pathname.startsWith("/tools");
   if (href === "/explore-idea") return pathname.startsWith("/explore-idea");
   if (href === "/categories") return pathname.startsWith("/categories");
@@ -62,7 +64,10 @@ export function SiteHeader() {
       <div className="container-page flex h-16 items-center justify-between gap-3">
         <Brand />
 
-        <nav aria-label="Navigasi utama" className="hidden items-center gap-0.5 xl:flex">
+        <nav
+          aria-label="Navigasi utama"
+          className="hidden min-w-0 flex-1 items-center gap-0.5 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden xl:flex"
+        >
           {navLinks.map((link) => (
             <Link
               key={link.href}

@@ -5,6 +5,7 @@ import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
+  BookOpen,
   Command,
   Compass,
   CornerDownLeft,
@@ -30,6 +31,7 @@ import { cn } from "@/lib/utils";
 const quickLinks = [
   { href: "/explore", label: "Explore semua AI", description: "Cari & filter 150 tool", icon: Compass },
   { href: "/explore-idea", label: "Explore Idea", description: "58 sumber referensi di 14 bidang", icon: Lightbulb },
+  { href: "/belajar-yuk", label: "MalBelajarYuk", description: "Buat pelajaran & catatan belajar", icon: BookOpen },
   { href: "/ai-humanizer", label: "Panduan AI Humanizer", description: "10 alat perapikan tulisan", icon: PenLine },
   { href: "/ai-humanizer/studio", label: "Ruang Tulis LEGACY", description: "Rapikan draf langsung di browser", icon: ScanText },
   { href: "/crypto", label: "Crypto Academy", description: "E-book, Candle Lab & kuis", icon: GraduationCap },

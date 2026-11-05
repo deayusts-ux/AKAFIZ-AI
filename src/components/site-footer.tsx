@@ -6,6 +6,7 @@ import { categories } from "@/data/categories";
 import { stats } from "@/data/tools";
 
 const directoryLinks = [
+  { href: "/belajar-yuk", label: "MalBelajarYuk — ruang belajar" },
   { href: "/crypto", label: "Crypto Academy" },
   { href: "/crypto/ebook", label: "E-book crypto" },
   { href: "/crypto/candlestick-lab", label: "Candlestick Lab" },

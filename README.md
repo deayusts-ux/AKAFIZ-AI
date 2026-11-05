@@ -1,8 +1,8 @@
 # LEGACY AI
 
-Direktori AI terkurasi: **150 tool**, **20 kategori**, tautan resmi, harga transparan, pencarian cepat, dan koleksi favorit yang tersimpan lokal — ditambah **Explore Idea** (58 sumber referensi di 14 bidang), **panduan AI Humanizer dengan Ruang Tulis di dalam situs**, **Crypto Academy**, e-book interaktif 10 bab tentang fundamental crypto dan candlestick, lengkap dengan portal akses privat dan halaman profil kreator.
+Direktori AI terkurasi: **150 tool**, **20 kategori**, tautan resmi, harga transparan, pencarian cepat, dan koleksi favorit yang tersimpan lokal — ditambah **Explore Idea** (58 sumber referensi di 14 bidang), **panduan AI Humanizer dengan Ruang Tulis di dalam situs**, **Crypto Academy**, e-book interaktif 10 bab tentang fundamental crypto dan candlestick, **MalBelajarYuk** — ruang belajar interaktif untuk membuat pelajaran dan mengumpulkan catatan — lengkap dengan portal akses privat dan halaman profil kreator.
 
-Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 295 halaman di-prerender statis saat build, ditambah route dinamis untuk login, logout, permintaan kode, dan notifikasi.
+Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 296 halaman di-prerender statis saat build, ditambah route dinamis untuk login, logout, permintaan kode, dan notifikasi.
 
 ## Fitur
 
@@ -10,6 +10,7 @@ Dibangun dengan Next.js App Router, TypeScript, Tailwind CSS, dan Lucide React. 
 - **Explore AI** dengan pencarian nama/fungsi/kategori, filter kategori dan harga (Gratis, Freemium, Berbayar), urutan, tampilan grid/list, serta URL yang selalu sinkron dengan filter.
 - **Explore Idea** — direktori 58 sumber referensi di 14 bidang (arsitektur, akuntansi, informatika, sipil, hukum, kesehatan, bisnis, desain, psikologi, pertanian, elektro, pendidikan, komunikasi, sains) dengan pencarian, filter kategori dan jenis, urutan, tampilan grid/list, serta halaman detail per sumber (detail di bawah).
 - **AI Humanizer** — panduan 10 alat penulisan ulang dan penyuntingan dengan tautan resmi, tiga rekomendasi untuk tugas kuliah, langkah penggunaan yang sehat, dan catatan tegas bahwa tidak ada alat yang menjamin lolos AI detector — plus **Ruang Tulis** yang bisa dipakai tanpa keluar dari LEGACY (detail di bawah).
+- **MalBelajarYuk** (`/belajar-yuk`) — ruang belajar interaktif: ketik topik untuk membuat pelajaran terstruktur, rekam audio dengan transkripsi, unggah materi, impor video YouTube, lalu kelola semua catatan dalam pustaka lokal ber-folder dengan mode slide (detail di bawah).
 - **Kategori** — 20 halaman kategori dengan daftar tool, statistik, filter, dan rekomendasi kategori terkait.
 - **Halaman detail tool** berisi deskripsi, fitur, harga, rating editorial, alternatif serupa, serta tombol kunjungan ke situs resmi.
 - **Trending** dengan peringkat editor dan skor popularitas yang dapat ditelusuri.
@@ -89,6 +90,25 @@ Halaman `/ai-humanizer` merangkum 10 alat untuk menulis ulang, merapikan, dan me
 - **Pecah kalimat** — kalimat di atas 28 kata dipecah pada penghubung yang aman.
 
 Fitur pendukung: analisis kata/kalimat/paragraf, perkiraan keterbacaan dari panjang kalimat dan kata, skor kerapian mesin lokal (bukan skor AI detector), riwayat kembali, penyimpanan draf di `localStorage`, salin, dan unduh `.txt`. Tidak ada teks yang dikirim ke server. Ruang Tulis bukan salinan layanan pihak ketiga; untuk fitur berbasis model, situs resmi tetap ditautkan. Halaman detail QuillBot, Grammarly, dan Wordtune di katalog utama juga menampilkan pintasan ke mode tulis ini.
+
+## MalBelajarYuk
+
+`/belajar-yuk` adalah ruang belajar interaktif yang berjalan sepenuhnya di browser. Tidak ada server penyimpanan; seluruh catatan tersimpan di IndexedDB perangkat pengguna.
+
+**Membuat materi**
+- **Ketik topik** — pelajaran dibuat dengan format konsisten: Ringkasan, Konsep Kunci, Penjelasan Langkah demi Langkah, Contoh, Latihan, Kunci Jawaban, dan Glosarium.
+- **Rekam** — merekam audio lewat mikrofon dengan transkripsi langsung (Web Speech API, bahasa Indonesia) bila didukung browser; hasil tersimpan sebagai catatan audio.
+- **Unggah** — membawa berkas teks (`.txt`, `.md`, `.csv`, `.json`, `.srt`, `.vtt`) atau media gambar/audio/video/PDF sebagai catatan dokumen.
+- **YouTube** — menempel tautan video; judul diambil lewat oEmbed dan thumbnail resmi ditampilkan; pemutar memakai embed `youtube-nocookie`.
+
+**AI dengan rantai cadangan**
+- Generator pelajaran mencoba AI eksternal bila kunci API tersedia: **Gemini** (`gemini-2.0-flash`, lalu `gemini-1.5-flash`) → **OpenRouter** (`meta-llama/llama-3.3-70b-instruct:free`) → **mesin pelajaran lokal** yang deterministik. Bila kuota satu penyedia habis, penyedia berikutnya dipakai otomatis; penyedia yang menghasilkan teks selalu dicantumkan di catatan.
+- Kunci API diisi sendiri oleh pengguna di pengaturan halaman dan tersimpan **hanya di `localStorage` perangkatnya**, dipanggil langsung dari browser ke API penyedia. "Memakai akun sendiri" diimplementasikan lewat kunci API ini — login Google popup sesungguhnya memerlukan OAuth Client ID dari Google Cloud, yang tidak dimiliki proyek ini.
+
+**Pustaka catatan**
+- Jenis catatan: Teks, Slide (pelajaran terstruktur), Dokumen, Audio, YouTube — dengan filter, pencarian, tampilan galeri/daftar, dan folder buatan pengguna.
+- Catatan pelajaran bisa dibuka dalam **mode slide** (navigasi per bagian `##`) atau **mode baca**, dipindah antar-folder, diubah kembali jadi pelajaran, diunduh, atau dihapus.
+- Catatan audio/video tersimpan sebagai blob di IndexedDB; stiker streak dan level dihitung dari tanggal dan jumlah catatan.
 
 ## Crypto Academy
 
@@ -212,6 +232,7 @@ src/
     tentang-saya/            # halaman profil kreator
     crypto/                  # Crypto Academy (e-book, lab, simulasi, kuis, glosarium, progres, game, tentang)
     explore-idea/            # Explore Idea: direktori, peta bidang, kategori, detail sumber
+    belajar-yuk/             # MalBelajarYuk: ruang belajar interaktif
     ai-humanizer/             # panduan 10 alat + Ruang Tulis (/ai-humanizer/studio)
     ai-humanizer/studio/      # editor penyuntingan lokal di browser
     categories/[slug]/       # 20 halaman kategori statis
@@ -221,6 +242,7 @@ src/
     crypto/                  # chart SVG, reader tools, kuis, simulasi, glosarium, game, progres
     idea/                    # kartu, baris, dan panel filter Explore Idea
     humanizer/               # Ruang Tulis: editor, aksi, analisis, pratinjau hasil
+    belajar/                 # MalBelajarYuk: studio komposer, kartu catatan, modal materi
     providers/               # favorites + toast context
     monogram.tsx             # monogram inisial berwarna untuk kartu sumber/alat
   data/
@@ -236,6 +258,7 @@ src/
     crypto/market.ts         # generator candle simulasi, timeframe, agregasi, formatter
     writing/analyze.ts       # mesin lokal: rapikan, padatkan, formalkan, pecah, analisis
     idea-types.ts, idea-icons.ts # tipe sumber dan peta ikon bidang
+    belajar/                 # tipe, IndexedDB, mesin pelajaran lokal, orkestrasi AI + rantai cadangan
   fonts/                     # font variabel lokal (Inter, Plus Jakarta Sans)
   lib/                       # tipe, util, auth sesi, notifikasi login, konfigurasi situs
   middleware.ts              # gerbang akses untuk seluruh halaman & API
